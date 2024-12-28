@@ -10,12 +10,27 @@
   </head>
   <body>
     <!-- Navbar -->
-    <nav>
-      <ul>
-        <li><a href="#">Home</a></li>
-        <li><a href="#">Generate Report</a></li>
-        <li><a href="#">Log Out</a></li>
-      </ul>
+    <nav class="nav">
+      <div class="nav-logo">
+        <p>PureFlow</p>
+      </div>
+      <div class="nav-menu" id="navMenu">
+        <ul>
+          <li><a href="index.html" class="link active">Home</a></li>
+          <li><a href="#" class="link">Staff</a></li>
+          <li><a href="#" class="link">About</a></li>
+        </ul>
+      </div>
+      <div class="nav-button">
+        <a href="reportGeneration.html">
+          <button class="btn white-btn" id="generateReportBtn">
+            Generate Report
+          </button>
+        </a>
+      </div>
+      <div class="nav-menu-btn">
+        <i class="bx bx-menu" onclick="myMenuFunction()"></i>
+      </div>
     </nav>
 
     <!-- Main header and time range selector container -->
@@ -31,35 +46,41 @@
       </div>
     </div>
 
-    <!-- Main chart and graphics -->
-    <div class="main-chart-container">
-      <canvas id="myChart" width="400" height="200"></canvas>
-    </div>
+    <!-- Main container that holds all the charts and data -->
+    <div class="container">
+      <!-- Main chart container -->
+      <div class="main-chart-container">
+        <canvas id="myChart" width="400" height="200"></canvas>
+      </div>
 
-    <!-- Graphics container for individual parameter charts and recent values -->
-    <div class="individual-charts-container">
-      <div class="chart-container">
-        <h3>Temperature</h3>
-        <canvas id="temperatureChart" width="420" height="200"></canvas>
-        <div id="temperatureValue" class="parameter-value">
-          Temperature: -- °C
+      <!-- Individual parameter charts and recent values -->
+      <div class="individual-charts-container">
+        <div class="chart-container">
+          <h3>Temperature</h3>
+          <canvas id="temperatureChart" width="200" height="100"></canvas>
+          <div id="temperatureValue" class="parameter-value">
+            <p id="temperatureAvg"></p>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <h3>Turbidity</h3>
+          <canvas id="turbidityChart" width="200" height="100"></canvas>
+          <div id="turbidityValue" class="parameter-value">
+            <p id="turbidityAvg"></p>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <h3>Water Depth</h3>
+          <canvas id="waterDepthChart" width="200" height="100"></canvas>
+          <div id="waterDepthValue" class="parameter-value">
+            <p id="waterDepthAvg"></p>
+          </div>
         </div>
       </div>
-
-      <div class="chart-container">
-        <h3>Turbidity</h3>
-        <canvas id="turbidityChart" width="420" height="200"></canvas>
-        <div id="turbidityValue" class="parameter-value">Turbidity: -- NTU</div>
-      </div>
-
-      <div class="chart-container">
-        <h3>Water Depth</h3>
-        <canvas id="waterDepthChart" width="420" height="200"></canvas>
-        <div id="waterDepthValue" class="parameter-value">
-          Water Depth: -- meters
-        </div>
-      </div>
     </div>
+    <!-- End of container -->
 
     <script type="module">
       import {
@@ -83,7 +104,11 @@
       let filteredWaterDepthData = [];
       let filteredTimestamps = [];
 
-      // Function to fetch data from Firestore
+      let mainChartInstance = null;
+      let temperatureChart = null;
+      let turbidityChart = null;
+      let waterDepthChart = null;
+
       async function fetchData() {
         try {
           const querySnapshot = await getDocs(waterParametersCollection);
@@ -95,260 +120,307 @@
           } else {
             querySnapshot.forEach((doc) => {
               const data = doc.data();
-
-              // Convert Firestore timestamp to a human-readable format
-              if (data.timestamp && data.timestamp.seconds) {
-                const date = new Date(data.timestamp.seconds * 1000);
-                const formattedDate = date.toLocaleString("en-US", {
-                  year: "numeric",
-                  month: "2-digit",
-                  day: "2-digit",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                });
-                allTimestamps.push(formattedDate);
-              } else {
-                allTimestamps.push("Unknown Timestamp");
+              if (
+                data.temperature !== undefined &&
+                data.turbidity !== undefined &&
+                data.waterDepth !== undefined &&
+                data.timestamp
+              ) {
+                const timestamp = data.timestamp;
+                if (timestamp && timestamp.seconds) {
+                  const date = new Date(timestamp.seconds * 1000);
+                  allTimestamps.push(date);
+                  allTemperatureData.push(data.temperature);
+                  allTurbidityData.push(data.turbidity);
+                  allWaterDepthData.push(data.waterDepth);
+                }
               }
-
-              allTemperatureData.push(data.temperature);
-              allTurbidityData.push(data.turbidity);
-              allWaterDepthData.push(data.waterDepth);
             });
 
-            filterDataByTimeRange("daily"); // Default time range
-            updateGraphics();
+            filterDataByTimeRange("daily");
             createMainChart();
+            createTemperatureChart();
+            createTurbidityChart();
+            createWaterDepthChart();
           }
         } catch (error) {
           console.error("Error fetching data from Firestore:", error);
         }
       }
 
-      // Function to filter data by time range (daily, weekly, or monthly)
       function filterDataByTimeRange(timeRange) {
         const currentDate = new Date();
+        const currentMonth = currentDate.getMonth();
+        const currentYear = currentDate.getFullYear();
 
         filteredTemperatureData = [];
         filteredTurbidityData = [];
         filteredWaterDepthData = [];
         filteredTimestamps = [];
 
-        let tempData = [];
-        let turbData = [];
-        let depthData = [];
-        let tempDates = [];
-
-        for (let i = 0; i < allTimestamps.length; i++) {
-          const timestamp = new Date(allTimestamps[i]);
-          let isWithinRange = false;
-
-          // For daily data, show today's data only
-          switch (timeRange) {
-            case "daily":
-              isWithinRange =
-                timestamp.toDateString() === currentDate.toDateString();
-              break;
-
-            // For weekly data, show data from the last 7 days, aggregated per day
-            case "weekly":
-              const diffInDays = Math.floor(
-                (currentDate - timestamp) / (1000 * 3600 * 24)
-              );
-              if (diffInDays <= 7) {
-                // Aggregate data per day
-                const dateKey = timestamp.toDateString();
-                if (!tempDates.includes(dateKey)) {
-                  tempDates.push(dateKey);
-                  tempData.push({
-                    date: dateKey,
-                    temp: 0,
-                    turb: 0,
-                    depth: 0,
-                    count: 0,
-                  });
-                }
-                let idx = tempDates.indexOf(dateKey);
-                tempData[idx].temp += allTemperatureData[i];
-                tempData[idx].turb += allTurbidityData[i];
-                tempData[idx].depth += allWaterDepthData[i];
-                tempData[idx].count++;
-              }
-              break;
-
-            // For monthly data, show data from the current month, aggregated per day
-            case "monthly":
-              isWithinRange =
-                timestamp.getMonth() === currentDate.getMonth() &&
-                timestamp.getFullYear() === currentDate.getFullYear();
-              if (isWithinRange) {
-                // Aggregate data per day
-                const dateKey = timestamp.toDateString();
-                if (!tempDates.includes(dateKey)) {
-                  tempDates.push(dateKey);
-                  tempData.push({
-                    date: dateKey,
-                    temp: 0,
-                    turb: 0,
-                    depth: 0,
-                    count: 0,
-                  });
-                }
-                let idx = tempDates.indexOf(dateKey);
-                tempData[idx].temp += allTemperatureData[i];
-                tempData[idx].turb += allTurbidityData[i];
-                tempData[idx].depth += allWaterDepthData[i];
-                tempData[idx].count++;
-              }
-              break;
-          }
-
-          if (isWithinRange) {
-            filteredTimestamps.push(allTimestamps[i]);
-            filteredTemperatureData.push(allTemperatureData[i]);
-            filteredTurbidityData.push(allTurbidityData[i]);
-            filteredWaterDepthData.push(allWaterDepthData[i]);
-          }
-        }
-
-        // Process the weekly and monthly averages after gathering the raw data
-        if (timeRange === "weekly" || timeRange === "monthly") {
-          tempData.forEach((entry) => {
-            filteredTimestamps.push(entry.date);
-            filteredTemperatureData.push(entry.temp / entry.count);
-            filteredTurbidityData.push(entry.turb / entry.count);
-            filteredWaterDepthData.push(entry.depth / entry.count);
+        if (timeRange === "daily") {
+          // Filter for the current day
+          allTimestamps.forEach((timestamp, index) => {
+            if (timestamp.toDateString() === currentDate.toDateString()) {
+              filteredTimestamps.push(timestamp.toLocaleTimeString());
+              filteredTemperatureData.push(allTemperatureData[index]);
+              filteredTurbidityData.push(allTurbidityData[index]);
+              filteredWaterDepthData.push(allWaterDepthData[index]);
+            }
           });
+        } else if (timeRange === "weekly") {
+          // Calculate weekly averages
+          const weekStart = new Date();
+          weekStart.setDate(currentDate.getDate() - currentDate.getDay()); // Start of the week (Monday)
+          const weekEnd = new Date(weekStart);
+          weekEnd.setDate(weekStart.getDate() + 6); // End of the week (Sunday)
+
+          let weeklyTempSum = 0;
+          let weeklyTurbiditySum = 0;
+          let weeklyWaterDepthSum = 0;
+          let daysInWeek = 0;
+
+          allTimestamps.forEach((timestamp, index) => {
+            if (timestamp >= weekStart && timestamp <= weekEnd) {
+              weeklyTempSum += allTemperatureData[index];
+              weeklyTurbiditySum += allTurbidityData[index];
+              weeklyWaterDepthSum += allWaterDepthData[index];
+              daysInWeek++;
+            }
+          });
+
+          if (daysInWeek > 0) {
+            filteredTimestamps.push("Week " + (currentDate.getWeek() || 1)); // Display the week number
+            filteredTemperatureData.push(weeklyTempSum / daysInWeek);
+            filteredTurbidityData.push(weeklyTurbiditySum / daysInWeek);
+            filteredWaterDepthData.push(weeklyWaterDepthSum / daysInWeek);
+          }
+        } else if (timeRange === "monthly") {
+          // Calculate monthly averages (for each day of the month)
+          let monthlyTempSum = [];
+          let monthlyTurbiditySum = [];
+          let monthlyWaterDepthSum = [];
+          let dayCounts = [];
+
+          allTimestamps.forEach((timestamp, index) => {
+            const day = timestamp.getDate();
+            if (
+              timestamp.getMonth() === currentMonth &&
+              timestamp.getFullYear() === currentYear
+            ) {
+              if (!monthlyTempSum[day]) {
+                monthlyTempSum[day] = 0;
+                monthlyTurbiditySum[day] = 0;
+                monthlyWaterDepthSum[day] = 0;
+                dayCounts[day] = 0;
+              }
+              monthlyTempSum[day] += allTemperatureData[index];
+              monthlyTurbiditySum[day] += allTurbidityData[index];
+              monthlyWaterDepthSum[day] += allWaterDepthData[index];
+              dayCounts[day]++;
+            }
+          });
+
+          for (let day = 1; day <= 31; day++) {
+            if (dayCounts[day]) {
+              filteredTimestamps.push(`Day ${day}`);
+              filteredTemperatureData.push(
+                monthlyTempSum[day] / dayCounts[day]
+              );
+              filteredTurbidityData.push(
+                monthlyTurbiditySum[day] / dayCounts[day]
+              );
+              filteredWaterDepthData.push(
+                monthlyWaterDepthSum[day] / dayCounts[day]
+              );
+            }
+          }
         }
+
+        createMainChart();
+        createTemperatureChart();
+        createTurbidityChart();
+        createWaterDepthChart();
+        displayAverages();
       }
 
-      // Function to update the graphical representations of the parameters
-      function updateGraphics() {
-        const temperatureValue =
-          filteredTemperatureData[filteredTemperatureData.length - 1];
-        const turbidityValue =
-          filteredTurbidityData[filteredTurbidityData.length - 1];
-        const waterDepthValue =
-          filteredWaterDepthData[filteredWaterDepthData.length - 1];
+      function updateAverageDisplay() {
+        // Calculate the average values for each parameter
+        const temperatureAvg =
+          filteredTemperatureData.reduce((a, b) => a + b, 0) /
+            filteredTemperatureData.length || 0;
+        const turbidityAvg =
+          filteredTurbidityData.reduce((a, b) => a + b, 0) /
+            filteredTurbidityData.length || 0;
+        const waterDepthAvg =
+          filteredWaterDepthData.reduce((a, b) => a + b, 0) /
+            filteredWaterDepthData.length || 0;
 
-        const temperatureElement = document.getElementById("temperatureValue");
-        const turbidityElement = document.getElementById("turbidityValue");
-        const waterDepthElement = document.getElementById("waterDepthValue");
-
-        // Only update the textContent if the element exists
-        if (temperatureElement) {
-          temperatureElement.textContent = temperatureValue + " °C";
-        }
-        if (turbidityElement) {
-          turbidityElement.textContent = turbidityValue + " NTU";
-        }
-        if (waterDepthElement) {
-          waterDepthElement.textContent = waterDepthValue + " meters";
-        }
+        // Update the text content of the average display elements
+        document.getElementById(
+          "temperatureAvg"
+        ).textContent = `Average Temperature: ${temperatureAvg.toFixed(2)} °C`;
+        document.getElementById(
+          "turbidityAvg"
+        ).textContent = `Average Turbidity: ${turbidityAvg.toFixed(2)} NTU`;
+        document.getElementById(
+          "waterDepthAvg"
+        ).textContent = `Average Water Depth: ${waterDepthAvg.toFixed(
+          2
+        )} meters`;
       }
 
-      // Function to create the main chart
       function createMainChart() {
-        new Chart(mainChartContext, {
+        if (mainChartInstance) mainChartInstance.destroy();
+        mainChartInstance = new Chart(mainChartContext, {
           type: "line",
           data: {
             labels: filteredTimestamps,
             datasets: [
               {
-                label: "Temperature",
+                label: "Temperature (°C)",
                 data: filteredTemperatureData,
-                borderColor: "rgb(255, 99, 132)",
-                fill: false,
-                tension: 0.1,
-                pointRadius: 6,
-                pointHoverRadius: 8,
+                borderColor: "#FF5733",
+                backgroundColor: "rgba(255, 87, 51, 0.2)",
+                fill: true,
               },
               {
-                label: "Turbidity",
+                label: "Turbidity (NTU)",
                 data: filteredTurbidityData,
-                borderColor: "rgb(255, 202, 40)",
-                fill: false,
-                tension: 0.1,
-                pointRadius: 6,
-                pointHoverRadius: 8,
+                borderColor: "#33FF57",
+                backgroundColor: "rgba(51, 255, 87, 0.2)",
+                fill: true,
               },
               {
-                label: "Water Depth",
+                label: "Water Depth (m)",
                 data: filteredWaterDepthData,
-                borderColor: "rgb(75, 192, 192)",
-                fill: false,
-                tension: 0.1,
-                pointRadius: 6,
-                pointHoverRadius: 8,
+                borderColor: "#3357FF",
+                backgroundColor: "rgba(51, 87, 255, 0.2)",
+                fill: true,
               },
             ],
           },
           options: {
             responsive: true,
+            maintainAspectRatio: false,
           },
         });
 
-        // Create individual charts for each parameter
-        createIndividualChart(
-          "temperatureChart",
-          filteredTimestamps,
-          filteredTemperatureData,
-          "Temperature",
-          "rgb(255, 99, 132)"
-        );
-        createIndividualChart(
-          "turbidityChart",
-          filteredTimestamps,
-          filteredTurbidityData,
-          "Turbidity",
-          "rgb(255, 202, 40)"
-        );
-        createIndividualChart(
-          "waterDepthChart",
-          filteredTimestamps,
-          filteredWaterDepthData,
-          "Water Depth",
-          "rgb(75, 192, 192)"
-        );
+        // Update average values after creating the chart
+        updateAverageDisplay();
       }
 
-      // Function to create individual parameter charts
-      function createIndividualChart(chartId, timestamps, data, label, color) {
-        const chartContext = document.getElementById(chartId).getContext("2d");
-        new Chart(chartContext, {
+      function createTemperatureChart() {
+        const ctx = document
+          .getElementById("temperatureChart")
+          .getContext("2d");
+        if (temperatureChart) temperatureChart.destroy();
+        temperatureChart = new Chart(ctx, {
           type: "line",
           data: {
-            labels: timestamps,
+            labels: filteredTimestamps,
             datasets: [
               {
-                label: label,
-                data: data,
-                borderColor: color,
-                fill: false,
-                tension: 0.1,
-                pointRadius: 4,
-                pointHoverRadius: 8
+                label: "Temperature (°C)",
+                data: filteredTemperatureData,
+                borderColor: "#FF5733",
+                backgroundColor: "rgba(255, 87, 51, 0.2)",
+                fill: true,
               },
             ],
           },
           options: {
             responsive: true,
+            maintainAspectRatio: false,
           },
         });
+
+        // Update average value for temperature
+        updateAverageDisplay();
       }
 
-      // Listen for changes in the time range selector
-      document
-        .getElementById("timeRange")
-        .addEventListener("change", (event) => {
-          const selectedRange = event.target.value;
-          filterDataByTimeRange(selectedRange);
-          updateGraphics();
-          createMainChart();
+      function createTurbidityChart() {
+        const ctx = document.getElementById("turbidityChart").getContext("2d");
+        if (turbidityChart) turbidityChart.destroy();
+        turbidityChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: filteredTimestamps,
+            datasets: [
+              {
+                label: "Turbidity (NTU)",
+                data: filteredTurbidityData,
+                borderColor: "#33FF57",
+                backgroundColor: "rgba(51, 255, 87, 0.2)",
+                fill: true,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+          },
         });
 
-      // Fetch data when the page is loaded
-      window.onload = fetchData;
+        // Update average value for turbidity
+        updateAverageDisplay();
+      }
+
+      function createWaterDepthChart() {
+        const ctx = document.getElementById("waterDepthChart").getContext("2d");
+        if (waterDepthChart) waterDepthChart.destroy();
+        waterDepthChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: filteredTimestamps,
+            datasets: [
+              {
+                label: "Water Depth (m)",
+                data: filteredWaterDepthData,
+                borderColor: "#3357FF",
+                backgroundColor: "rgba(51, 87, 255, 0.2)",
+                fill: true,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+          },
+        });
+
+        // Update average value for water depth
+        updateAverageDisplay();
+      }
+
+      function displayAverages() {
+        const avgTemp = calculateAverage(filteredTemperatureData);
+        const avgTurbidity = calculateAverage(filteredTurbidityData);
+        const avgWaterDepth = calculateAverage(filteredWaterDepthData);
+
+        document.getElementById(
+          "temperatureAvg"
+        ).textContent = `Avg Temperature: ${avgTemp.toFixed(2)} °C`;
+        document.getElementById(
+          "turbidityAvg"
+        ).textContent = `Avg Turbidity: ${avgTurbidity.toFixed(2)} NTU`;
+        document.getElementById(
+          "waterDepthAvg"
+        ).textContent = `Avg Water Depth: ${avgWaterDepth.toFixed(2)} m`;
+      }
+
+      function calculateAverage(data) {
+        const sum = data.reduce((a, b) => a + b, 0);
+        return data.length ? sum / data.length : 0;
+      }
+
+      document
+        .getElementById("timeRange")
+        .addEventListener("change", function (event) {
+          filterDataByTimeRange(event.target.value);
+        });
+
+      fetchData();
     </script>
   </body>
 </html>

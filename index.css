@@ -2,88 +2,125 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
 
 body {
-  font-family: "Dm Sans", sans-serif; /* Updated font family from Google Fonts */
-  font-size: 16px; /* Consistent font size */
+  font-family: "Dm Sans", sans-serif;
+  font-size: 16px;
   margin: 0;
   padding: 0;
-  background-color: #dceeff; /* Light blue background */
+  background-color: #f0f8ff;
+  padding-top: 100px;
+  padding-bottom: 80px; /* Added padding to avoid overlap with fixed navbar */
 }
 
 body::-webkit-scrollbar {
-  display: none; /* Hides the scrollbar */
+  display: none;
 }
 
-/* Navbar */
-nav {
-  background-color: #003366; /* Dark blue */
-  color: white;
-  margin: 0;
-  padding: 20px 0; /* Increased padding for more spacious navbar */
-  text-align: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Shadow added to the navbar */
-  font-size: 18px; /* Slightly larger font for better readability */
-}
-
-nav ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
+.nav {
+  position: fixed;
+  top: 0;
   display: flex;
-  justify-content: center;
-  align-items: center; /* Center vertically */
+  justify-content: space-between; /* Align logo, menu, and button */
+  align-items: center;
+  width: 100%;
+  height: 100px;
+  background: linear-gradient(rgba(0, 51, 102), transparent);
+  z-index: 100;
+  padding: 0 30px; /* Add padding to prevent sticking to the sides */
 }
 
-nav ul li {
-  margin: 0 15px; /* Increased spacing between links */
-}
-
-nav ul li a {
+.nav-logo p {
   color: white;
-  text-decoration: none;
-  font-size: 18px; /* Consistent font size for navbar */
-  font-weight: 500; /* Slightly bold for better visibility */
-  padding: 12px 24px; /* Added padding for spacious look */
-  border-radius: 5px;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition */
+  font-size: 25px;
+  font-weight: 600;
 }
 
-nav ul li a:hover {
-  background-color: #00509e; /* Medium blue on hover */
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3); /* Shadow effect on hover */
+.nav-menu {
+  display: flex;
+  justify-content: center; /* Center the menu items */
+  flex-grow: 1;
+}
+
+.nav-menu ul {
+  display: flex;
+  margin: 0; /* Removes default margin */
+}
+
+.nav-menu ul li {
+  list-style-type: none;
+}
+
+.nav-menu ul li .link {
+  text-decoration: none;
+  font-weight: 500;
+  color: #fff;
+  padding-bottom: 15px;
+  margin: 0 25px; /* Space between menu items */
+}
+
+.link:hover, .active {
+  border-bottom: 2px solid #fff;
+}
+
+.nav-button {
+  margin-left: auto;
+  color: #fff;
+  margin-right: 3.5rem; /* Adjusted to prevent the button from sticking */
+}
+
+.nav-button .btn {
+  width: 180px;
+  height: 45px;
+  font-weight: 500;
+  background: rgba(0, 51, 102, 0.85); /* Darker button color */
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow effect */
+}
+
+.btn:hover {
+  background: rgb(0, 58, 117);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3); /* More intense hover effect */
 }
 
 /* Ensure the header container uses flexbox */
 .header-container {
   display: flex;
-  justify-content: space-between; /* Distribute space between elements */
-  align-items: center; /* Vertically center the content */
-  margin-left: 25px; /* Adjust as needed */
+  justify-content: space-between;
+  align-items: center;
+  margin-left: 25px;
   margin-right: 25px;
-  padding-left: 10px; /* Adjust as needed */
-  padding-right: 10px; /* Add margin for spacing */
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 /* Styling for the time range selector */
 .time-range-selector {
   display: flex;
   align-items: center;
-  margin-top: 30px; /* Vertically center the select dropdown */
+  margin-top: 30px;
 }
 
-/* Optional styling for the select dropdown and label */
 .time-range-selector select {
-  padding: 5px 10px; /* Add padding for better appearance */
-  font-size: 1rem; /* Make the font size consistent */
+  padding: 5px 10px;
+  font-size: 1rem;
+  border: 1px solid #0066b3;
+  border-radius: 5px;
 }
 
 .time-range-selector label {
-  margin-right: 10px; /* Space between label and dropdown */
+  margin-right: 10px;
   font-size: 1rem;
+  color: #004d80;
 }
+
 h2 {
-  color: #003366;
+  color: #004d80;
   font-size: 2.2rem;
   margin-bottom: 5px;
+  text-align: center; /* Center header text */
 }
 
 /* Main Chart Section */
@@ -94,23 +131,22 @@ h2 {
 
 /* Canvas for main chart */
 #myChart {
-  width: 96%; /* Set to occupy 96% of the screen width */
-  height: auto; /* Maintain aspect ratio */
-  max-height: 550px; /* Limit maximum height */
-  margin-left: auto; /* Center the chart */
-  margin-right: auto; /* Center the chart */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Subtle shadow for the chart */
-  background-color: #f0f8ff; /* Light blue for the chart container */
-  border-radius: 8px; /* Rounded corners for the chart container */
+  width: 96%;
+  height: auto;
+  max-height: 550px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background-color: #f0f8ff;
+  border-radius: 8px;
   padding: 20px;
-  border: 1px solid #00509e; /* Medium blue border */
+  border: 1px solid #0066b3;
 }
 
-/* General Buttons and Interactions */
 button {
-  font-size: 16px; /* Consistent font size for buttons */
-  padding: 12px 18px; /* Adjusted padding for better proportions */
-  background-color: #00509e; /* Medium blue */
+  font-size: 16px;
+  padding: 12px 18px;
+  background-color: #0066b3;
   color: white;
   border: none;
   border-radius: 5px;
@@ -120,40 +156,59 @@ button {
 }
 
 button:hover {
-  background-color: #003366; /* Darker blue on hover */
+  background-color: #003366;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
+/* Main chart container with specific height */
+.main-chart-container {
+  width: auto;
+  height: 510px; 
+  margin-bottom: 20px;/* Set fixed height for the main chart */
+  margin-left: 35px;
+  margin-right: 35px;
+}
 
-/* Container for the individual parameter charts */
+canvas {
+  width: 100% !important;
+  height: 100% !important; /* Ensure the canvas fills its container */
+  margin-bottom: 10px;
+
+}
+
 .individual-charts-container {
-  display: flex; /* Align charts horizontally */
-  justify-content: center;
-  gap: 20px; /* Spacing between the charts */
-  margin-top: 20px;
-  flex-wrap: wrap; /* Allow wrapping if needed */
-}
-/* Individual charts (Temperature, Turbidity, and Water Depth) */
-.chart-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 30%; /* Set width for each chart section */
-  margin-bottom: 20px; /* Add bottom margin for spacing */
-  text-align: center; /* Center align labels */
+  justify-content: space-around;
+  margin-left: 20px;
+  margin-right: 20px;
+  margin-bottom: 50px;
 }
+
+.chart-container {
+  width: 30%;
+  position: relative;
+  height: 200px;
+   /* Set height for individual charts */
+}
+
+.parameter-value {
+  text-align: center;
+  font-size: 16px;
+  color: #333;
+}
+
 
 .chart-container h3 {
-  color: #003366;
+  color: #004d80;
   font-size: 1.5em;
-  margin-bottom: 15px; /* Space between label and chart */
+  margin-bottom: 15px;
 }
 
 .chart-container canvas {
-  max-width: 100%; /* Ensure charts are responsive */
-  height: 200px; /* Adjusted height for individual charts (200px) */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Subtle shadow for each chart */
-  background-color: #f0f8ff; /* Light blue for the chart container */
+  max-width: 100%;
+  height: 200px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  background-color: #f0f8ff;
   border-radius: 8px;
-  border: 1px solid #00509e; /* Medium blue border */
-  margin-bottom: 10px; /* Space below chart */
+  border: 1px solid #0066b3;
+  margin-bottom: 10px;
 }

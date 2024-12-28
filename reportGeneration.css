@@ -1,0 +1,230 @@
+/* Global Styles */
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
+
+body {
+  font-family: "Dm Sans", sans-serif;
+  font-size: 16px;
+  margin: 0;
+  padding: 0;
+  background-color: #dceeff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* Start content from the top */
+  height: 100vh; /* Full viewport height */
+  overflow-y: auto; /* Enable scrolling on the body */
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/* Navbar */
+.nav {
+  position: fixed;
+  top: 0;
+  display: flex;
+  justify-content: space-between; /* Space out logo, menu, and button */
+  align-items: center;
+  width: 100%;
+  height: 100px;
+  background: linear-gradient(rgba(0, 51, 102), transparent);
+  z-index: 100;
+  padding: 0 30px; /* Add padding to prevent sticking to the sides */
+}
+
+.nav-logo p {
+  color: white;
+  font-size: 25px;
+  font-weight: 600;
+}
+
+.nav-menu {
+  display: flex;
+  flex-grow: 1; /* Ensure the menu items are centered */
+  justify-content: center;
+}
+
+.nav-menu ul {
+  display: flex;
+  margin: 0;
+}
+
+.nav-menu ul li {
+  list-style-type: none;
+}
+
+.nav-menu ul li .link {
+  text-decoration: none;
+  font-weight: 500;
+  color: #fff;
+  padding-bottom: 15px;
+  margin: 0 25px;
+}
+
+.link:hover,
+.active {
+  border-bottom: 2px solid #fff;
+}
+
+.nav-button {
+  margin-left: auto;
+  margin-right: 2rem; /* Adjusted to avoid sticking to the side */
+}
+
+.nav-button .btn {
+  width: 180px;
+  height: 45px;
+  font-weight: 500;
+  background: rgba(0, 51, 102, 0.85); /* Darker button color */
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow effect */
+}
+
+.btn:hover {
+  background: rgb(0, 58, 117);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3); /* More intense hover effect */
+}
+
+/* Title */
+h1 {
+  color: #4caf50;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  text-align: center;
+  margin-top: 80px; /* To give space from the fixed navbar */
+}
+
+/* Container for Dropdown and Button */
+.form-container {
+  width: 90vw;
+  margin-top: 120px; /* Adjusted space for the fixed navbar */
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: #f0f8ff;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* New dropdown for report types */
+.report-type-dropdown {
+  margin-top: 20px;
+  font-size: 16px;
+  padding: 12px 20px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.report-type-dropdown:hover {
+  background-color: #f4f4f4;
+}
+
+/* Button Styling */
+.button {
+  display: inline-block;
+  padding: 12px 24px;
+  margin-top: 20px;
+  font-size: 1rem;
+  color: #fff;
+  background-color: #4caf50;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for button */
+}
+
+.button:hover {
+  background-color: #45a049;
+}
+
+/* Container for Generated Report */
+.report-container {
+  margin-top: 40px;
+  width: 90vw;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  background-color: #f0f8ff;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  border: 1px solid #00509e;
+}
+
+/* Date Range Section */
+.report-date-range {
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px; /* Space between date range and report content */
+  color: #333;
+}
+
+/* Chart container for centering the chart */
+.chart-container {
+  width: 100%;
+  height: 60%;
+  max-height: 400px; /* Prevents it from becoming too large */
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for charts */
+}
+
+/* Report Table */
+.report-table {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+}
+
+.report-table th,
+.report-table td {
+  padding: 12px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+.report-table th {
+  background-color: #f2f2f2;
+}
+
+.report-table td {
+  background-color: #e6f7ff; /* Light blue background for values */
+}
+
+/* Center the download button */
+#downloadReport {
+  margin-top: 20px;
+  padding: 12px 24px;
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: inline-block;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#downloadReport:hover {
+  background-color: #1976d2;
+}
+
+#reportChart {
+  width: 100%;  /* Makes the chart take up 100% of the container width */
+  height: 500px; /* Fixed height */
+}
