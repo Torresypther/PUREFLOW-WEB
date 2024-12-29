@@ -4,30 +4,29 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
-      rel="stylesheet"
-    />
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="login.css" />
     <title>PureFlow - Water Quality Monitoring</title>
   </head>
   <body>
     <div class="wrapper">
+      <!-- Navbar -->
       <nav class="nav">
         <div class="nav-logo">
           <p>PureFlow</p>
         </div>
         <div class="nav-menu" id="navMenu">
           <ul>
-            <li><a href="#" class="link active">Home</a></li>
-            <li><a href="#" class="link">Blog</a></li>
-            <li><a href="#" class="link">Services</a></li>
-            <li><a href="#" class="link">About</a></li>
+            <li><a href="index.html" class="link" id="homeLink">Home</a></li>
+            <li><a href="reportGeneration.html" id="reportLink" class="link">Reports</a></li>
+            <li><a href="adminProfile.html" id="adminProfileLink" class="link">Admin Profile</a></li>
+            <li><a href="staffManagement.html" id="staffLink" class="link">Staff Page</a></li>
+            <li><a href="about.html" id="aboutLink" class="link">About</a></li>
           </ul>
         </div>
         <div class="nav-button">
-          <button class="btn white-btn" id="loginBtn" onclick="login()">
-            Sign In
+          <button class="btn white-btn" id="signInBtn">
+            <a href="login.html">Sign In</a>
           </button>
         </div>
         <div class="nav-menu-btn">
@@ -39,30 +38,20 @@
         <!-- Login Form -->
         <div class="login-container" id="login">
           <div class="top">
-            <span
-              >Don't have an account?
-              <a href="#" onclick="requestAccount()"
-                >Request an Account</a
-              ></span
-            >
+            <span>Don't have an account? <a href="#" onclick="requestAccount()">Request an Account</a></span>
             <header>Login</header>
           </div>
 
           <div class="input-box">
-            <input
-              type="text"
-              class="input-field"
-              placeholder="Username or Email"
-            />
+            <input type="text" class="input-field" id="email" placeholder="Email" />
             <i class="bx bx-user"></i>
           </div>
           <div class="input-box">
-            <input type="password" class="input-field" placeholder="Password" />
+            <input type="password" class="input-field" id="password" placeholder="Password" />
             <i class="bx bx-lock-alt"></i>
           </div>
-          <div class="input-box">
-            <input type="submit" class="submit" value="Sign In" />
-          </div>
+          <input type="submit" class="submit" value="Sign In" id="loginBtn" />
+
           <div class="two-col">
             <div class="one">
               <input type="checkbox" id="login-check" />
@@ -73,29 +62,88 @@
             </div>
           </div>
         </div>
-
-        <!-- Removed Registration Form -->
       </div>
     </div>
 
-    <script>
-      function myMenuFunction() {
-        var i = document.getElementById("navMenu");
-        if (i.className === "nav-menu") {
-          i.className += " responsive";
-        } else {
-          i.className = "nav-menu";
+    <script type="module">
+      import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
+      import { db, auth } from "./config.js";
+      import { onAuthStateChanged, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
+
+      // Handle login
+      async function handleLogin() {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        try {
+          const userCredential = await signInWithEmailAndPassword(auth, email, password);
+          const user = userCredential.user;
+          alert(`Welcome, ${user.email}!`);
+
+          const userRole = await getUserRole(user.email);
+          if (userRole === "admin") {
+            window.location.href = "admin_dashboard.html";
+          } else if (userRole === "staff") {
+            window.location.href = "staff_dashboard.html";
+          } else {
+            window.location.href = "index.html";
+          }
+        } catch (error) {
+          console.error("Error during login:", error.message);
+          alert("Login failed. Please check your email and password.");
         }
       }
 
-      var a = document.getElementById("loginBtn");
-      var x = document.getElementById("login");
+      // Get user role from Firestore
+      async function getUserRole(email) {
+        try {
+          const userDocRef = doc(db, "users", email);
+          const userDoc = await getDoc(userDocRef);
 
-      function login() {
-        x.style.left = "4px";
-        a.className += " white-btn";
-        x.style.opacity = 1;
+          if (userDoc.exists()) {
+            return userDoc.data().role;
+          } else {
+            console.error("No such user document found!");
+            return null;
+          }
+        } catch (error) {
+          console.error("Error fetching user role:", error.message);
+          return null;
+        }
       }
+
+      // Attach event listener after DOM content is loaded
+      document.addEventListener("DOMContentLoaded", function() {
+        const loginBtn = document.getElementById("loginBtn");
+        console.log(loginBtn); // Check if button is found
+
+        if (loginBtn) {
+          loginBtn.addEventListener("click", handleLogin);
+        } else {
+          console.error("Login button not found!");
+        }
+
+        // Disable all links except Home and About
+        const links = document.querySelectorAll(".nav-menu a");
+        links.forEach(link => {
+          if (link !== document.getElementById("homeLink") && link !== document.getElementById("aboutLink")) {
+            link.addEventListener("click", (e) => e.preventDefault());
+            link.style.pointerEvents = "none";  // Optional, to visually disable the link
+            link.style.opacity = "0.5";  // Optional, to visually indicate it's disabled
+          }
+        });
+      });
+
+      // Menu toggle function
+      function myMenuFunction() {
+        const navMenu = document.getElementById("navMenu");
+        if (navMenu.className === "nav-menu") {
+          navMenu.className += " responsive";
+        } else {
+          navMenu.className = "nav-menu";
+        }
+      }
+
       function requestAccount() {
         alert("Please contact the admin to request an account.");
       }

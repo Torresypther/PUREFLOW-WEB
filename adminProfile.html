@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="adminProfile.css" />
+    <script type="module" src="config.js"></script>
+    <title>Document</title>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="nav">
+      <div class="nav-logo">
+        <p>PureFlow</p>
+      </div>
+      <div class="nav-menu" id="navMenu">
+        <ul>
+          <li><a href="index.html" class="link">Home</a></li>
+          <li>
+            <a href="reportGeneration.html" id="reportLink" class="link"
+              >Reports</a
+            >
+          </li>
+          <li>
+            <a
+              href="adminProfile.html"
+              id="adminProfileLink"
+              class="link active"
+              >Admin Profile</a
+            >
+          </li>
+          <li>
+            <a href="staffManagement.html" id="staffLink" class="hidden"
+              >Staff Page</a
+            >
+          </li>
+          <li><a href="about.html" id="aboutLink" class="link">About</a></li>
+        </ul>
+      </div>
+      <div class="nav-button">
+        <button class="btn white-btn hidden" id="signOutBtn">Sign Out</button>
+      </div>
+      <div class="nav-menu-btn">
+        <i class="bx bx-menu" onclick="myMenuFunction()"></i>
+      </div>
+    </nav>
+  </body>
+</html>

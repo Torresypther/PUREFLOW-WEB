@@ -1,0 +1,119 @@
+/* Global Styles */
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
+
+body {
+  font-family: "Dm Sans", sans-serif;
+  font-size: 16px;
+  margin: 0;
+  padding: 0;
+  padding-top: 100px;
+  padding-bottom: 80px;
+  background: url("photos/pexels-enginakyurt-1435752.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  position: relative; /* Set position to relative for the pseudo-element */
+  height: 100vh; /* Ensure the body takes up the full height of the viewport */
+}
+
+body::before {
+  content: "";
+  position: absolute; /* Position the overlay relative to the body */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%; /* Ensure it covers the entire height of the viewport */
+  background: rgba(0, 0, 0, 0.25); /* Transparent black background */
+  z-index: -1; /* Ensure the overlay is behind the content */
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/* Navbar Styling */
+.nav {
+  position: fixed;
+  top: 0;
+  display: flex;
+  justify-content: space-between; /* Align logo, menu, and button */
+  align-items: center;
+  width: 100%;
+  height: 100px;
+  background: linear-gradient(rgba(0, 46, 81), transparent);
+  z-index: 100;
+  padding: 0 30px; /* Add padding to prevent sticking to the sides */
+}
+
+.nav-logo p {
+  color: whitesmoke;
+  font-size: 25px;
+  font-weight: 600;
+}
+
+.nav-menu {
+  display: flex;
+  justify-content: center; /* Center the menu items */
+  flex-grow: 1;
+}
+
+.nav-menu ul {
+  display: flex;
+  margin: 0; /* Removes default margin */
+}
+
+.nav-menu ul li {
+  list-style-type: none;
+}
+
+.nav-menu ul li .link {
+  text-decoration: none;
+  font-weight: 500;
+  color: whitesmoke;
+  padding-bottom: 15px;
+  margin: 0 25px; /* Space between menu items */
+}
+
+.link:hover,
+.active {
+  border-bottom: 2px solid #fff;
+}
+
+/* Apply the same style to hidden links */
+.nav-menu ul li .hidden {
+  text-decoration: none;
+  font-weight: 500;
+  color: whitesmoke;
+  padding-bottom: 15px;
+  margin: 0 25px; /* Space between menu items */
+}
+
+.hidden:hover,
+.hidden.active {
+  border-bottom: 2px solid #fff;
+}
+
+/* Navbar Buttons */
+.nav-button {
+  margin-left: auto;
+  color: #004d80;
+  margin-right: 3.5rem; /* Adjusted to prevent the button from sticking */
+}
+
+.nav-button .btn {
+  width: 180px;
+  height: 45px;
+  font-weight: 500;
+  background: #eef8ff; /* Darker button color */
+  color: #004d80;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow effect */
+}
+
+.btn:hover {
+  background: #dcf2ff;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3); /* More intense hover effect */
+}
