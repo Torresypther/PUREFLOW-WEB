@@ -9,12 +9,12 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css"
     />
     <link rel="stylesheet" href="reportGeneration.css" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module" src="config.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+    />
     <script src="https://rawgit.com/eKoopmans/html2pdf/master/dist/html2pdf.bundle.js"></script>
-
-    <!-- Make sure this is a module -->
   </head>
   <body>
     <!-- Navbar -->
@@ -31,12 +31,7 @@
             >
           </li>
           <li>
-            <a href="adminProfile.html" id="adminProfileLink" class="link"
-              >Admin Profile</a
-            >
-          </li>
-          <li>
-            <a href="staffManagement.html" id="staffLink" class="link"
+            <a href="staffManagement.html" id="staffLink" class="hidden"
               >Staff Page</a
             >
           </li>
@@ -44,30 +39,67 @@
         </ul>
       </div>
       <div class="nav-button">
-        <button class="btn white-btn hidden" id="signOutBtn">Sign Out</button>
-      </div>
-      <div class="nav-menu-btn">
-        <i class="bx bx-menu" onclick="myMenuFunction()"></i>
+        <button class="btn white-btn" id="signInBtn" style="display: none">
+          <a href="login.html">Sign In</a>
+        </button>
+        <button
+          class="btn white-btn hidden"
+          id="signOutBtn"
+          style="display: none"
+        >
+          Sign Out
+        </button>
       </div>
     </nav>
 
-    <!-- Container for Dropdown and Button -->
     <div class="form-container">
-      <h1 class="title">Generate PDF Report</h1>
-      <!-- Dropdown for Report Type -->
-      <select id="reportType" class="report-type-dropdown">
-        <option value="daily">Daily Report</option>
-        <option value="weekly">Weekly Report</option>
-        <option value="monthly">Monthly Report</option>
-        <option value="annual">Annual Report</option>
-      </select>
+      <!-- Title Container -->
+      <div class="h1-container">
+        <h1 class="title">Generate PDF/CSV Report</h1>
+      </div>
 
-      <button id="generateReport" class="button">Generate Report</button>
+      <!-- Left Container: Dropdown and Button -->
+      <div class="left-right-container">
+        <div class="left-container">
+          <label for="dateRange">Basic Generation:</label>
+          <select id="reportType" class="report-type-dropdown">
+            <option value="daily">Daily Report</option>
+            <option value="weekly">Weekly Report</option>
+            <option value="monthly">Monthly Report</option>
+            <option value="custom">Custom Date</option>
+          </select>
+        </div>
+
+        <!-- "OR" Text -->
+        <div class="or-container">
+          <span class="or-text">OR</span>
+        </div>
+
+        <!-- Right Container: Date Range Selection -->
+        <div class="right-container">
+          <label class="customLabel" for="dateRange"
+            >Custom Date Range Generation:</label
+          >
+          <div id="dateRangeInputs">
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate" />
+            <label for="endDate">End Date:</label>
+            <input type="date" id="endDate" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Button Container -->
+      <div class="button-container">
+        <button id="generateReport" class="button">Generate Report</button>
+        <button id="clearSelection" class="button clear-button">
+          <i class="bi bi-x-circle"></i> Clear Selection
+        </button>
+      </div>
     </div>
 
     <!-- Container for Generated Report -->
     <div id="reportContainer" class="report-container" style="display: none">
-      <!-- Display Date Range -->
       <p id="reportDateRange" class="report-date-range"></p>
       <div class="chart-container">
         <canvas id="reportChart"></canvas>
@@ -96,78 +128,269 @@
         </tbody>
       </table>
 
-      <!-- New button to trigger PDF download -->
       <button id="downloadPDF" class="button">Download PDF</button>
+      <button id="downloadCSV" class="button">Download CSV</button>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
+
     <script type="module">
+      import { db, auth } from "./config.js";
       import {
-        getFirestore,
+        getDocs,
+        query,
+        collection,
+        where,
+      } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
+      import {
+        onAuthStateChanged,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
+
+      async function getUserRoleByEmail(email) {
+        try {
+          console.log("Fetching role for email:", email);
+          const userQuery = query(
+            collection(db, "users"),
+            where("email", "==", email)
+          );
+          const querySnapshot = await getDocs(userQuery);
+
+          if (querySnapshot.empty) {
+            console.error("No document found for email:", email);
+            return null;
+          } else {
+            const userDoc = querySnapshot.docs[0];
+            console.log("User document data:", userDoc.data());
+            return userDoc.data().role;
+          }
+        } catch (error) {
+          console.error("Error fetching user role:", error.message);
+          return null;
+        }
+      }
+
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          console.log("User is logged in:", user);
+          const userRole = await getUserRoleByEmail(user.email);
+
+          if (userRole === "Admin") {
+            grantAccessForAdmin();
+          } else if (userRole === "Staff") {
+            grantAccessForStaff();
+          } else {
+            console.warn(
+              "Role not recognized or role field is missing. Restricting access."
+            );
+            restrictAccess();
+          }
+
+          if (signOutBtn) signOutBtn.style.display = "inline-block";
+        } else {
+          console.log("No user logged in.");
+          if (signOutBtn) signOutBtn.style.display = "none";
+          restrictAccess();
+        }
+      });
+
+      function restrictAccess() {
+        if (staffLink) {
+          staffLink.style.pointerEvents = "none";
+          staffLink.style.opacity = "0.5";
+        }
+        if (reportLink) {
+          reportLink.style.pointerEvents = "none";
+          reportLink.style.opacity = "0.5";
+        }
+
+        console.log("Access restricted.");
+      }
+
+      function grantAccessForAdmin() {
+        if (staffLink) {
+          staffLink.style.pointerEvents = "auto";
+          staffLink.style.opacity = "1";
+        }
+        if (reportLink) {
+          reportLink.style.pointerEvents = "auto";
+          reportLink.style.opacity = "1";
+        }
+
+        console.log("Admin access granted.");
+      }
+
+      function grantAccessForStaff() {
+        if (staffLink) {
+          staffLink.style.pointerEvents = "none";
+          staffLink.style.opacity = "0.5";
+        }
+        if (reportLink) {
+          reportLink.style.pointerEvents = "auto";
+          reportLink.style.opacity = "1";
+        }
+
+        console.log("Staff access granted.");
+      }
+
+      signOutBtn.addEventListener("click", async () => {
+        try {
+          await signOut(auth);
+          console.log("Sign-out successful.");
+        } catch (error) {
+          console.error("Sign-out failed:", error);
+        }
+      });
+
+      restrictAccess();
+    </script>
+
+    <script type="module">
+      import { db } from "./config.js";
+      import {
         collection,
         query,
         where,
         getDocs,
       } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
-      import { db } from "./config.js";
 
-      let chart;
+      document.addEventListener("DOMContentLoaded", function () {
+        const clearButton = document.getElementById("clearSelection");
+        const startDateInput = document.getElementById("startDate");
+        const endDateInput = document.getElementById("endDate");
+        const reportTypeDropdown = document.getElementById("reportType");
+        const dateRangeInputs = document.getElementById("dateRangeInputs");
 
-      // Function to fetch data from Firestore based on report type
-      async function fetchDataFromFirebase(reportType) {
+        clearButton.addEventListener("click", function () {
+          startDateInput.value = "";
+          endDateInput.value = "";
+          reportTypeDropdown.selectedIndex = 0;
+          dateRangeInputs.style.display = "block";
+          document.getElementById("reportContainer").style.display = "none";
+          document.getElementById("downloadPDF").style.display = "none";
+          document.getElementById("downloadCSV").style.display = "none";
+
+          if (myChart) {
+            myChart.destroy();
+            myChart = null;
+          }
+        });
+
+        dateRangeInputs.style.display = "block";
+      });
+
+      let myChart = null;
+
+      function validateInputs(reportType, startDate, endDate) {
+        if (reportType === "custom") {
+          if (!startDate || !endDate) {
+            alert(
+              "Please select both start and end dates for the custom range."
+            );
+            return false;
+          }
+          if (startDate > endDate) {
+            alert("Start date cannot be later than end date.");
+            return false;
+          }
+        }
+        return true;
+      }
+
+      async function fetchDataFromFirebase(
+        reportType,
+        startDate = null,
+        endDate = null
+      ) {
         let data = {
           temperatureData: [],
           turbidityData: [],
           waterDepthData: [],
+          labels: [],
         };
 
         const today = new Date();
-        let startDate = new Date();
-        let endDate = today;
+        let finalStartDate = startDate ? new Date(startDate) : new Date(today);
+        let finalEndDate = endDate ? new Date(endDate) : new Date(today);
 
-        // Set date range based on report type
-        if (reportType === "daily") {
-          startDate = today;
-          endDate = today;
-        } else if (reportType === "weekly") {
-          startDate.setDate(today.getDate() - 7);
-        } else if (reportType === "monthly") {
-          startDate.setMonth(today.getMonth() - 1);
-        } else if (reportType === "annual") {
-          startDate.setFullYear(today.getFullYear() - 1);
+        // Handle daily, weekly, monthly logic
+        if (!startDate || !endDate) {
+          if (reportType === "daily") {
+            finalStartDate.setHours(0, 0, 0, 0);
+            finalEndDate.setHours(23, 59, 59, 999);
+          } else if (reportType === "weekly") {
+            finalEndDate.setHours(23, 59, 59, 999);
+            finalStartDate.setDate(finalEndDate.getDate() - 6);
+            finalStartDate.setHours(0, 0, 0, 0);
+          } else if (reportType === "monthly") {
+            finalStartDate.setDate(1);
+            finalStartDate.setHours(0, 0, 0, 0);
+            finalEndDate.setMonth(today.getMonth() + 1);
+            finalEndDate.setDate(0);
+            finalEndDate.setHours(23, 59, 59, 999);
+          }
         }
 
-        const waterQualityCollection = collection(db, "water_parameters"); // Collection name
-        // Query using the timestamp field to filter data
+        const waterQualityCollection = collection(db, "water_parameters");
         const q = query(
           waterQualityCollection,
-          where("timestamp", ">=", startDate),
-          where("timestamp", "<=", endDate)
+          where("timestamp", ">=", finalStartDate),
+          where("timestamp", "<=", finalEndDate)
         );
 
         try {
-          // Fetch data from Firestore
           const snapshot = await getDocs(q);
-          console.log(snapshot.docs.length); // Check how many documents are fetched
+          const dailyData = {};
 
           snapshot.forEach((doc) => {
             const dataDoc = doc.data();
-            console.log(dataDoc); // Log the data fetched for debugging
+            const timestamp = dataDoc.timestamp.toDate();
+            const day = timestamp.toISOString().split("T")[0];
 
-            // Assuming fields are named 'temperature', 'turbidity', and 'waterDepth'
-            data.temperatureData.push(dataDoc.temperature);
-            data.turbidityData.push(dataDoc.turbidity);
-            data.waterDepthData.push(dataDoc.waterDepth);
+            if (!dailyData[day]) {
+              dailyData[day] = {
+                temperature: [],
+                turbidity: [],
+                waterDepth: [],
+              };
+            }
+
+            dailyData[day].temperature.push(dataDoc.temperature);
+            dailyData[day].turbidity.push(dataDoc.turbidity);
+            dailyData[day].waterDepth.push(dataDoc.waterDepth);
           });
 
-          console.log("Fetched Data:", data); // Log the data to ensure it's fetched correctly
-          return { data, startDate, endDate };
+          let currentDate = new Date(finalStartDate);
+          let allDates = [];
+
+          while (currentDate <= finalEndDate) {
+            allDates.push(currentDate.toISOString().split("T")[0]);
+            currentDate.setDate(currentDate.getDate() + 1);
+          }
+
+          allDates.forEach((day) => {
+            if (!dailyData[day]) {
+              dailyData[day] = {
+                temperature: [0],
+                turbidity: [0],
+                waterDepth: [0],
+              };
+            }
+            data.labels.push(day);
+            data.temperatureData.push(dailyData[day].temperature[0]);
+            data.turbidityData.push(dailyData[day].turbidity[0]);
+            data.waterDepthData.push(dailyData[day].waterDepth[0]);
+          });
+
+          return { data, finalStartDate, finalEndDate };
         } catch (error) {
           console.error("Error fetching data:", error);
-          return { data, startDate, endDate };
+          return { data, finalStartDate, finalEndDate };
         }
       }
 
-      // Event listener for generating the report
       document
         .getElementById("generateReport")
         .addEventListener("click", async () => {
@@ -175,143 +398,278 @@
           reportContainer.style.display = "block";
 
           const reportType = document.getElementById("reportType").value;
+          let startDate, endDate;
 
-          // Fetch data based on the selected report type
-          const { data, startDate, endDate } = await fetchDataFromFirebase(
-            reportType
-          );
-
-          // Destroy previous chart if it exists
-          if (chart) {
-            chart.destroy();
+          if (reportType === "custom") {
+            startDate = document.getElementById("startDate").value;
+            endDate = document.getElementById("endDate").value;
           }
 
-          // Ensure there is data to display
+          const { data, finalStartDate, finalEndDate } =
+            await fetchDataFromFirebase(reportType, startDate, endDate);
+
           if (data.temperatureData.length === 0) {
             alert("No data available for the selected range.");
             return;
           }
 
-          // Create a new line chart
+          if (myChart) {
+            myChart.destroy();
+          }
+
+          const avgTemperature =
+            data.temperatureData.reduce((a, b) => a + b, 0) /
+            data.temperatureData.length;
+          const avgTurbidity =
+            data.turbidityData.reduce((a, b) => a + b, 0) /
+            data.turbidityData.length;
+          const avgWaterDepth =
+            data.waterDepthData.reduce((a, b) => a + b, 0) /
+            data.waterDepthData.length;
+
+          document.getElementById("averageTemperature").textContent =
+            avgTemperature.toFixed(2);
+          document.getElementById("averageTurbidity").textContent =
+            avgTurbidity.toFixed(2);
+          document.getElementById("averageWaterDepth").textContent =
+            avgWaterDepth.toFixed(2);
+
+          document.getElementById(
+            "reportDateRange"
+          ).textContent = `${finalStartDate.toLocaleDateString()} - ${finalEndDate.toLocaleDateString()}`;
+
           const ctx = document.getElementById("reportChart").getContext("2d");
-
-          // Adjust labels based on the fetched data length
-          const labels = Array.from(
-            { length: data.temperatureData.length },
-            (_, i) => `Day ${i + 1}`
-          );
-
-          chart = new Chart(ctx, {
-            type: "line", // Set chart type to line (linear)
+          myChart = new Chart(ctx, {
+            type: "line",
             data: {
-              labels: labels,
+              labels: data.labels,
               datasets: [
                 {
-                  label: "Temperature (°C)",
+                  label: "Temperature",
                   data: data.temperatureData,
-                  fill: false, // Line chart with no fill
-                  borderColor: "#FF6384", // Line color
-                  tension: 0.1, // Controls the curve of the line (linear)
-                  borderWidth: 2, // Line thickness
-                  pointRadius: 5, // Radius of points on the line
-                  pointBackgroundColor: "#FF6384", // Color of the points
+                  fill: false,
+                  borderColor: "#FF6384",
                 },
                 {
-                  label: "Turbidity (NTU)",
+                  label: "Turbidity",
                   data: data.turbidityData,
                   fill: false,
                   borderColor: "#36A2EB",
-                  tension: 0.1,
-                  borderWidth: 2,
-                  pointRadius: 5,
-                  pointBackgroundColor: "#36A2EB",
                 },
                 {
-                  label: "Water Depth (m)",
+                  label: "Water Depth",
                   data: data.waterDepthData,
                   fill: false,
-                  borderColor: "#FFCE56",
-                  tension: 0.1,
-                  borderWidth: 2,
-                  pointRadius: 5,
-                  pointBackgroundColor: "#FFCE56",
+                  borderColor: "#4BC0C0",
                 },
               ],
             },
             options: {
               responsive: true,
-              plugins: {
-                legend: {
-                  display: true, // Show legend
-                  position: "top", // Position of the legend
-                },
-              },
               scales: {
-                x: {
-                  title: {
-                    display: true,
-                    text: "Days",
-                  },
-                },
-                y: {
-                  beginAtZero: true, // Start Y-axis from 0
-                  title: {
-                    display: true,
-                    text: "Values",
-                  },
-                  ticks: {
-                    stepSize: 1, // Set step size for the Y-axis
-                  },
-                },
+                x: { title: { display: true, text: "Date" } },
+                y: { beginAtZero: true },
               },
             },
           });
 
-          // Calculate averages for each parameter
-          const averageTemperature =
-            data.temperatureData.reduce((a, b) => a + b, 0) /
-            data.temperatureData.length;
-          const averageTurbidity =
-            data.turbidityData.reduce((a, b) => a + b, 0) /
-            data.turbidityData.length;
-          const averageWaterDepth =
-            data.waterDepthData.reduce((a, b) => a + b, 0) /
-            data.waterDepthData.length;
-
-          document.getElementById(
-            "averageTemperature"
-          ).textContent = `${averageTemperature.toFixed(2)} °C`;
-          document.getElementById(
-            "averageTurbidity"
-          ).textContent = `${averageTurbidity.toFixed(2)} NTU`;
-          document.getElementById(
-            "averageWaterDepth"
-          ).textContent = `${averageWaterDepth.toFixed(2)} meters`;
-
-          const dateRangeText = `Date Range: ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
-          document.getElementById("reportDateRange").textContent =
-            dateRangeText;
-
-          // Show the download button
-          document.getElementById("downloadReport").style.display =
-            "inline-block";
+          document.getElementById("downloadPDF").style.display = "inline-block";
+          document.getElementById("downloadCSV").style.display = "inline-block";
         });
 
-      // Download PDF function
-      document.getElementById("downloadPDF").addEventListener("click", () => {
-        const element = document.getElementById("reportContainer");
+      document
+        .getElementById("downloadCSV")
+        .addEventListener("click", function () {
+          const temperatureData =
+            document.getElementById("averageTemperature").textContent;
+          const turbidityData =
+            document.getElementById("averageTurbidity").textContent;
+          const waterDepthData =
+            document.getElementById("averageWaterDepth").textContent;
 
-        // Options for html2pdf
-        const opt = {
-          margin: 0.5, // Set small margins to fit everything on one page
-          filename: "water_quality_report.pdf",
-          html2canvas: { scale: 2 }, // Adjust the scale of the rendering
-          jsPDF: { unit: "in", format: "letter", orientation: "landscape" }, // Landscape mode
-        };
+          // Get data from the chart
+          const labels = myChart.data.labels; // Labels (dates or x-axis labels)
+          const temperatureChartData = myChart.data.datasets[0].data; // Temperature data
+          const turbidityChartData = myChart.data.datasets[1].data; // Turbidity data
+          const waterDepthChartData = myChart.data.datasets[2].data; // Water depth data
 
-        // Generate PDF with adjusted settings
-        html2pdf().from(element).set(opt).save();
-      });
+          // Prepare data array for CSV
+          let data = [
+            ["Date", "Temperature", "Turbidity", "Water Depth"], // Header for the chart data
+            ["Average Temperature", temperatureData],
+            ["Average Turbidity", turbidityData],
+            ["Average Water Depth", waterDepthData],
+          ];
+
+          // Add data points from the chart to the CSV
+          labels.forEach((label, index) => {
+            data.push([
+              label,
+              temperatureChartData[index],
+              turbidityChartData[index],
+              waterDepthChartData[index],
+            ]);
+          });
+
+          // Convert data to CSV format
+          let csvContent = "data:text/csv;charset=utf-8,";
+          data.forEach(function (rowArray) {
+            let row = rowArray.join(",");
+            csvContent += row + "\r\n";
+          });
+
+          // Trigger download
+          const encodedUri = encodeURI(csvContent);
+          const link = document.createElement("a");
+          link.setAttribute("href", encodedUri);
+          link.setAttribute("download", "report.csv");
+          link.click();
+        });
+
+      document
+        .getElementById("downloadPDF")
+        .addEventListener("click", function () {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF("portrait", "mm", "a4");
+
+          // Get data from the page
+          const temperatureData =
+            document.getElementById("averageTemperature").textContent;
+          const turbidityData =
+            document.getElementById("averageTurbidity").textContent;
+          const waterDepthData =
+            document.getElementById("averageWaterDepth").textContent;
+
+          // Get chart data
+          const labels = myChart.data.labels;
+          const temperatureChartData = myChart.data.datasets[0].data;
+          const turbidityChartData = myChart.data.datasets[1].data;
+          const waterDepthChartData = myChart.data.datasets[2].data;
+
+          // Get date range
+          const startDate = labels[0];
+          const endDate = labels[labels.length - 1];
+          const dateRange = `Date Range: ${startDate} to ${endDate}`;
+
+          // Add title to the PDF
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(20);
+          doc.setTextColor(25, 89, 139);
+          doc.text(
+            "Water Quality Report",
+            doc.internal.pageSize.width / 2,
+            25,
+            { align: "center" }
+          );
+
+          // Add Date Range to the left
+          doc.setFont("helvetica", "italic");
+          doc.setFontSize(11);
+          doc.setTextColor(109, 109, 109);
+          doc.text(dateRange, 10, 40);
+
+          // Insert chart image and center it
+          const canvas = document.getElementById("reportChart");
+          const chartImage = canvas.toDataURL("image/png");
+          const chartWidth = 170;
+          const chartHeight = 85;
+          doc.addImage(
+            chartImage,
+            "PNG",
+            (doc.internal.pageSize.width - chartWidth) / 2,
+            45,
+            chartWidth,
+            chartHeight
+          );
+
+          // Table of averages
+          doc.setFont("helvetica", "italic");
+          doc.setFontSize(11);
+          doc.setTextColor(109, 109, 109);
+          doc.text(
+            "Average Values:",
+            10,
+            doc.lastAutoTable ? doc.lastAutoTable.finalY + 5 : 140
+          ); // Align title to left
+
+          // Prepare the table data for averages
+          const tableData = [
+            ["Parameter", "Average"],
+            ["Temperature", temperatureData],
+            ["Turbidity", turbidityData],
+            ["Water Depth", waterDepthData],
+          ];
+
+          const tableWidth = doc.internal.pageSize.width - 20;
+          const columnWidth = tableWidth / 2;
+
+          doc.autoTable({
+            startY: doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : 145,
+            head: [["Parameter", "Average"]],
+            body: tableData.slice(1),
+            margin: { left: 10, right: 10 },
+            styles: {
+              fontSize: 12,
+              halign: "center",
+              valign: "middle",
+              cellPadding: 2.5,
+            },
+            columnStyles: {
+              0: { cellWidth: columnWidth },
+              1: { cellWidth: columnWidth },
+            },
+          });
+
+
+          const chartData = [
+            ["Day", "Temperature", "Turbidity", "Water Depth"],
+          ];
+          for (let i = 0; i < labels.length; i++) {
+            chartData.push([
+              labels[i],
+              temperatureChartData[i],
+              turbidityChartData[i],
+              waterDepthChartData[i],
+            ]);
+          }
+
+          // Add chart data table title
+          doc.setFont("helvetica", "italic");
+          doc.setFontSize(11);
+          doc.setTextColor(109, 109, 109);
+          doc.text(
+            "Detailed Chart Data:",
+            10,
+            doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : 185
+          ); // Align title to left
+
+          // Adjust column width for the detailed chart data table
+          const detailedTableWidth = doc.internal.pageSize.width - 20;
+          const detailedColumnWidth = detailedTableWidth / 4;
+
+          // Add table for detailed chart data
+          doc.autoTable({
+            startY: doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : 200,
+            head: [["Day", "Temperature", "Turbidity", "Water Depth"]],
+            body: chartData.slice(1),
+            margin: { left: 10, right: 10 },
+            styles: {
+              fontSize: 12,
+              halign: "center",
+              valign: "middle",
+              cellPadding: 2.5,
+            },
+            columnStyles: {
+              0: { cellWidth: detailedColumnWidth },
+              1: { cellWidth: detailedColumnWidth },
+              2: { cellWidth: detailedColumnWidth },
+              3: { cellWidth: detailedColumnWidth },
+            },
+          });
+
+          // Save the PDF
+          doc.save("water_quality_report.pdf");
+        });
     </script>
   </body>
 </html>

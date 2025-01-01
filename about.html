@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="about.css" />
+    <title>Pureflow About Page</title>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="nav">
+        <div class="nav-logo">
+          <p>PureFlow</p>
+        </div>
+        <div class="nav-menu" id="navMenu">
+          <ul>
+            <li><a href="index.html" class="link active">Home</a></li>
+            <li>
+              <a href="reportGeneration.html" id="reportLink" class="link"
+                >Reports</a
+              >
+            </li>
+            <li>
+              <a href="staffManagement.html" id="staffLink" class="hidden"
+                >Staff Page</a
+              >
+            </li>
+            <li><a href="about.html" id="aboutLink" class="link">About</a></li>
+          </ul>
+        </div>
+        <div class="nav-button">
+          <button class="btn white-btn" id="signInBtn" style="display: none;">
+            <a href="login.html">Sign In</a>
+          </button>
+          <button class="btn white-btn hidden" id="signOutBtn" style="display: none;">Sign Out</button>
+        </div>
+      </nav>
+
+    <script type="module">
+      import { db, auth } from "./config.js";
+      import {
+        getDocs,
+        query,
+        collection,
+        where,
+      } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
+      import {
+        onAuthStateChanged,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
+
+      async function getUserRoleByEmail(email) {
+        try {
+          console.log("Fetching role for email:", email);
+          const userQuery = query(
+            collection(db, "users"),
+            where("email", "==", email)
+          );
+          const querySnapshot = await getDocs(userQuery);
+
+          if (querySnapshot.empty) {
+            console.error("No document found for email:", email);
+            return null;
+          } else {
+            const userDoc = querySnapshot.docs[0];
+            console.log("User document data:", userDoc.data());
+            return userDoc.data().role;
+          }
+        } catch (error) {
+          console.error("Error fetching user role:", error.message);
+          return null;
+        }
+      }
+
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          console.log("User is logged in:", user);
+          const userRole = await getUserRoleByEmail(user.email);
+
+          if (userRole === "Admin") {
+            grantAccessForAdmin();
+          } else if (userRole === "Staff") {
+            grantAccessForStaff();
+          } else {
+            console.warn(
+              "Role not recognized or role field is missing. Restricting access."
+            );
+            restrictAccess();
+          }
+
+          if (signOutBtn) signOutBtn.style.display = "inline-block";
+        } else {
+          console.log("No user logged in.");
+          if (signOutBtn) signOutBtn.style.display = "none";
+          restrictAccess();
+        }
+      });
+
+      function restrictAccess() {
+        if (staffLink) {
+          staffLink.style.pointerEvents = "none";
+          staffLink.style.opacity = "0.5";
+        }
+        if (reportLink) {
+          reportLink.style.pointerEvents = "none";
+          reportLink.style.opacity = "0.5";
+        }
+
+        console.log("Access restricted.");
+      }
+
+      function grantAccessForAdmin() {
+        if (staffLink) {
+          staffLink.style.pointerEvents = "auto";
+          staffLink.style.opacity = "1";
+        }
+        if (reportLink) {
+          reportLink.style.pointerEvents = "auto";
+          reportLink.style.opacity = "1";
+        }
+
+        console.log("Admin access granted.");
+      }
+
+      function grantAccessForStaff() {
+        if (staffLink) {
+          staffLink.style.pointerEvents = "none";
+          staffLink.style.opacity = "0.5";
+        }
+        if (reportLink) {
+          reportLink.style.pointerEvents = "auto";
+          reportLink.style.opacity = "1";
+        }
+
+        console.log("Staff access granted.");
+      }
+
+      signOutBtn.addEventListener("click", async () => {
+        try {
+          await signOut(auth);
+          console.log("Sign-out successful.");
+        } catch (error) {
+          console.error("Sign-out failed:", error);
+        }
+      });
+
+      restrictAccess();
+    </script>
+  </body>
+</html>

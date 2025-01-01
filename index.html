@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Water Quality Dashboard</title>
     <link rel="stylesheet" href="index.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module" src="config.js"></script>
   </head>
@@ -19,27 +22,22 @@
           <li><a href="index.html" class="link active">Home</a></li>
           <li>
             <a href="reportGeneration.html" id="reportLink" class="link"
-              >Reports</a>
-          </li>
-          <li>
-            <a href="adminProfile.html" id="adminProfileLink" class="hidden"
-              >Admin Profile</a>
+              >Reports</a
+            >
           </li>
           <li>
             <a href="staffManagement.html" id="staffLink" class="hidden"
-              >Staff Page</a>
+              >Staff Page</a
+            >
           </li>
           <li><a href="about.html" id="aboutLink" class="link">About</a></li>
         </ul>
       </div>
       <div class="nav-button">
-        <button class="btn white-btn" id="signInBtn">
+        <button class="btn white-btn" id="signInBtn" style="display: none;">
           <a href="login.html">Sign In</a>
         </button>
-        <button class="btn white-btn hidden" id="signOutBtn">Sign Out</button>
-      </div>
-      <div class="nav-menu-btn">
-        <i class="bx bx-menu" onclick="myMenuFunction()"></i>
+        <button class="btn white-btn hidden" id="signOutBtn" style="display: none;">Sign Out</button>
       </div>
     </nav>
 
@@ -94,31 +92,66 @@
     <!-- End of container -->
 
     <script type="module">
-      import {
-        getFirestore,
-        collection,
-        getDocs,
-      } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
       import { db, auth } from "./config.js";
+      import {
+        getDocs,
+        query,
+        collection,
+        where,
+      } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
       import {
         onAuthStateChanged,
         signOut,
       } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
 
-      const timeRangeSelector = document.getElementById("timeRange");
-      const signInBtn = document.getElementById("signInBtn");
-      const signOutBtn = document.getElementById("signOutBtn");
-      const adminProfileLink = document.getElementById("adminProfileLink");
-      const reportLink = document.getElementById("reportLink");
-      const staffLink = document.getElementById("staffLink");
-      const generateReportBtn = document.getElementById("generateReportBtn");
+      async function getUserRoleByEmail(email) {
+        try {
+          console.log("Fetching role for email:", email);
+          const userQuery = query(
+            collection(db, "users"),
+            where("email", "==", email)
+          );
+          const querySnapshot = await getDocs(userQuery);
+
+          if (querySnapshot.empty) {
+            console.error("No document found for email:", email);
+            return null;
+          } else {
+            const userDoc = querySnapshot.docs[0];
+            console.log("User document data:", userDoc.data());
+            return userDoc.data().role;
+          }
+        } catch (error) {
+          console.error("Error fetching user role:", error.message);
+          return null;
+        }
+      }
+
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          console.log("User is logged in:", user);
+          const userRole = await getUserRoleByEmail(user.email);
+
+          if (userRole === "Admin") {
+            grantAccessForAdmin();
+          } else if (userRole === "Staff") {
+            grantAccessForStaff();
+          } else {
+            console.warn(
+              "Role not recognized or role field is missing. Restricting access."
+            );
+            restrictAccess();
+          }
+
+          if (signOutBtn) signOutBtn.style.display = "inline-block";
+        } else {
+          console.log("No user logged in.");
+          if (signOutBtn) signOutBtn.style.display = "none";
+          restrictAccess();
+        }
+      });
 
       function restrictAccess() {
-        // Make all links visible but disable them (non-clickable)
-        if (adminProfileLink) {
-          adminProfileLink.style.pointerEvents = "none"; // Disable interaction
-          adminProfileLink.style.opacity = "0.5"; // Visually indicate disabled state
-        }
         if (staffLink) {
           staffLink.style.pointerEvents = "none";
           staffLink.style.opacity = "0.5";
@@ -127,17 +160,11 @@
           reportLink.style.pointerEvents = "none";
           reportLink.style.opacity = "0.5";
         }
-        if (timeRangeSelector) timeRangeSelector.disabled = true;
 
         console.log("Access restricted.");
       }
 
-      function grantAccess() {
-        // Enable interaction for links
-        if (adminProfileLink) {
-          adminProfileLink.style.pointerEvents = "auto"; // Enable interaction
-          adminProfileLink.style.opacity = "1"; // Reset opacity
-        }
+      function grantAccessForAdmin() {
         if (staffLink) {
           staffLink.style.pointerEvents = "auto";
           staffLink.style.opacity = "1";
@@ -146,30 +173,22 @@
           reportLink.style.pointerEvents = "auto";
           reportLink.style.opacity = "1";
         }
-        if (timeRangeSelector) timeRangeSelector.disabled = false;
 
-        console.log("Access granted.");
+        console.log("Admin access granted.");
       }
 
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          console.log("User is logged in:", user);
-
-          // Hide Sign In Button and show Sign Out Button
-          if (signInBtn) signInBtn.style.display = "none";
-          if (signOutBtn) signOutBtn.style.display = "inline-block";
-
-          grantAccess();
-        } else {
-          console.log("No user logged in.");
-
-          // Show Sign In Button and hide Sign Out Button
-          if (signInBtn) signInBtn.style.display = "inline-block";
-          if (signOutBtn) signOutBtn.style.display = "none";
-
-          restrictAccess();
+      function grantAccessForStaff() {
+        if (staffLink) {
+          staffLink.style.pointerEvents = "none";
+          staffLink.style.opacity = "0.5";
         }
-      });
+        if (reportLink) {
+          reportLink.style.pointerEvents = "auto";
+          reportLink.style.opacity = "1";
+        }
+
+        console.log("Staff access granted.");
+      }
 
       signOutBtn.addEventListener("click", async () => {
         try {
@@ -180,9 +199,27 @@
         }
       });
 
-      restrictAccess(); // Ensure initial state
+      restrictAccess();
+    </script>
 
-      // Water parameters chart functionality
+    <script type="module">
+      import { db, auth } from "./config.js";
+      import {
+        getFirestore,
+        collection,
+        getDocs,
+        doc,
+        getDoc,
+        onSnapshot,
+        query,
+        where,
+      } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
+      import {
+        getAuth,
+        onAuthStateChanged,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
+
       const waterParametersCollection = collection(db, "water_parameters");
       const mainChartContext = document
         .getElementById("myChart")
@@ -199,52 +236,66 @@
 
       let mainChartInstance = null;
 
-      async function fetchData() {
-        try {
-          const querySnapshot = await getDocs(waterParametersCollection);
-          console.log("Data fetched from Firestore:", querySnapshot);
+      function setupRealTimeListener() {
+        onSnapshot(waterParametersCollection, (snapshot) => {
+          // Reset data arrays
+          allTemperatureData = [];
+          allTurbidityData = [];
+          allWaterDepthData = [];
+          allTimestamps = [];
 
-          if (querySnapshot.empty) {
-            console.log(
-              'No documents found in the "water_parameters" collection.'
-            );
-          } else {
-            querySnapshot.forEach((doc) => {
-              const data = doc.data();
-              if (
-                data.temperature !== undefined &&
-                data.turbidity !== undefined &&
-                data.waterDepth !== undefined &&
-                data.timestamp
-              ) {
-                const timestamp = data.timestamp;
-                if (timestamp && timestamp.seconds) {
-                  const date = new Date(timestamp.seconds * 1000);
-                  allTimestamps.push(date);
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            if (
+              data.temperature !== undefined &&
+              data.turbidity !== undefined &&
+              data.waterDepth !== undefined &&
+              data.timestamp
+            ) {
+              const timestamp = data.timestamp;
+              if (timestamp && timestamp.seconds) {
+                const date = new Date(timestamp.seconds * 1000); // Convert Firestore timestamp to Date
+                if (!isNaN(date.getTime())) {
+                  // Check if it's a valid date
+                  const formattedDateTime = formatDateTime(date); // Format the date
+                  allTimestamps.push(formattedDateTime); // Store formatted date
                   allTemperatureData.push(data.temperature);
                   allTurbidityData.push(data.turbidity);
                   allWaterDepthData.push(data.waterDepth);
+                } else {
+                  console.error("Invalid timestamp:", timestamp);
                 }
               }
-            });
+            }
+          });
 
-            console.log("Fetched all data:", {
-              allTemperatureData,
-              allTurbidityData,
-              allWaterDepthData,
-              allTimestamps,
-            });
+          console.log("Real-time data updated:", {
+            allTemperatureData,
+            allTurbidityData,
+            allWaterDepthData,
+            allTimestamps,
+          });
 
-            filterDataByTimeRange("daily");
-            createMainChart();
-            createTemperatureChart(); // Add chart for temperature
-            createTurbidityChart(); // Add chart for turbidity
-            createWaterDepthChart(); // Add chart for water depth
-          }
-        } catch (error) {
-          console.error("Error fetching data from Firestore:", error);
-        }
+          // Reapply filtering and update charts
+          filterDataByTimeRange("daily");
+          createMainChart();
+          createTemperatureChart(); // Update temperature chart
+          createTurbidityChart(); // Update turbidity chart
+          createWaterDepthChart(); // Update water depth chart
+        });
       }
+
+      // Helper function to format Date to "YYYY-MM-DD HH:mm"
+      function formatDateTime(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+        const day = String(date.getDate()).padStart(2, "0");
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+
+        return `${year}-${month}-${day} ${hours}:${minutes}`; // Format as "YYYY-MM-DD HH:mm"
+      }
+
       function filterDataByTimeRange(timeRange) {
         const currentDate = new Date();
         const currentMonth = currentDate.getMonth();
@@ -260,8 +311,10 @@
         switch (timeRange) {
           case "daily":
             allTimestamps.forEach((timestamp, index) => {
-              if (timestamp.toDateString() === currentDate.toDateString()) {
-                filteredTimestamps.push(timestamp.toLocaleTimeString());
+              const date =
+                timestamp instanceof Date ? timestamp : new Date(timestamp);
+              if (date.toDateString() === currentDate.toDateString()) {
+                filteredTimestamps.push(date.toLocaleTimeString()); // Only display time
                 filteredTemperatureData.push(allTemperatureData[index]);
                 filteredTurbidityData.push(allTurbidityData[index]);
                 filteredWaterDepthData.push(allWaterDepthData[index]);
@@ -269,6 +322,7 @@
             });
             console.log("Filtered daily data:", filteredTemperatureData);
             break;
+
           case "weekly":
             const weekStart = new Date(
               currentDate.setDate(currentDate.getDate() - currentDate.getDay())
@@ -282,7 +336,9 @@
             let daysInWeek = 0;
 
             allTimestamps.forEach((timestamp, index) => {
-              if (timestamp >= weekStart && timestamp <= weekEnd) {
+              const date =
+                timestamp instanceof Date ? timestamp : new Date(timestamp);
+              if (date >= weekStart && date <= weekEnd) {
                 weeklyTempSum += allTemperatureData[index];
                 weeklyTurbiditySum += allTurbidityData[index];
                 weeklyWaterDepthSum += allWaterDepthData[index];
@@ -291,13 +347,24 @@
             });
 
             if (daysInWeek > 0) {
-              filteredTimestamps.push("Week " + (currentDate.getWeek() || 1));
+              const weekStartStr = weekStart.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              });
+              const weekEndStr = weekEnd.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              });
+              const weekRangeStr = `${weekStartStr} to ${weekEndStr}`;
+
+              filteredTimestamps.push(weekRangeStr);
               filteredTemperatureData.push(weeklyTempSum / daysInWeek);
               filteredTurbidityData.push(weeklyTurbiditySum / daysInWeek);
               filteredWaterDepthData.push(weeklyWaterDepthSum / daysInWeek);
             }
             console.log("Filtered weekly data:", filteredTemperatureData);
             break;
+
           case "monthly":
             let monthlyTempSum = [];
             let monthlyTurbiditySum = [];
@@ -305,11 +372,13 @@
             let dayCounts = [];
 
             allTimestamps.forEach((timestamp, index) => {
-              const day = timestamp.getDate();
+              const date =
+                timestamp instanceof Date ? timestamp : new Date(timestamp);
               if (
-                timestamp.getMonth() === currentMonth &&
-                timestamp.getFullYear() === currentYear
+                date.getMonth() === currentMonth &&
+                date.getFullYear() === currentYear
               ) {
+                const day = date.getDate();
                 if (!monthlyTempSum[day]) {
                   monthlyTempSum[day] = 0;
                   monthlyTurbiditySum[day] = 0;
@@ -325,7 +394,15 @@
 
             for (let day = 1; day <= 31; day++) {
               if (dayCounts[day]) {
-                filteredTimestamps.push(`Day ${day}`);
+                const formattedDate = new Date(
+                  currentYear,
+                  currentMonth,
+                  day
+                ).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                });
+                filteredTimestamps.push(formattedDate);
                 filteredTemperatureData.push(
                   monthlyTempSum[day] / dayCounts[day]
                 );
@@ -345,8 +422,17 @@
         createTemperatureChart();
         createTurbidityChart();
         createWaterDepthChart();
-        displayAverages();
+        updateAverageDisplay();
       }
+
+      // Ensure the getWeek method is available for weekly calculation
+      Date.prototype.getWeek = function () {
+        const startDate = new Date(this.getFullYear(), 0, 1);
+        const diff = this - startDate;
+        const oneDay = 1000 * 60 * 60 * 24;
+        const dayOfYear = Math.floor(diff / oneDay);
+        return Math.ceil((dayOfYear + 1) / 7);
+      };
 
       function updateAverageDisplay() {
         const temperatureAvg =
@@ -377,41 +463,50 @@
       }
 
       function createMainChart() {
-        if (mainChartInstance) mainChartInstance.destroy();
-        mainChartInstance = new Chart(mainChartContext, {
-          type: "line",
-          data: {
-            labels: filteredTimestamps,
-            datasets: [
-              {
-                label: "Temperature (°C)",
-                data: filteredTemperatureData,
-                borderColor: "#FF5733",
-                backgroundColor: "rgba(255, 87, 51, 0.2)",
-                fill: true,
-              },
-              {
-                label: "Turbidity (NTU)",
-                data: filteredTurbidityData,
-                borderColor: "#33FF57",
-                backgroundColor: "rgba(51, 255, 87, 0.2)",
-                fill: true,
-              },
-              {
-                label: "Water Depth (m)",
-                data: filteredWaterDepthData,
-                borderColor: "#3357FF",
-                backgroundColor: "rgba(51, 87, 255, 0.2)",
-                fill: true,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-          },
-        });
+        if (!mainChartInstance) {
+          mainChartInstance = new Chart(mainChartContext, {
+            type: "line",
+            data: {
+              labels: filteredTimestamps,
+              datasets: [
+                {
+                  label: "Temperature (°C)",
+                  data: filteredTemperatureData,
+                  borderColor: "#FF5733",
+                  backgroundColor: "rgba(255, 87, 51, 0.2)",
+                  fill: true,
+                },
+                {
+                  label: "Turbidity (NTU)",
+                  data: filteredTurbidityData,
+                  borderColor: "#33FF57",
+                  backgroundColor: "rgba(51, 255, 87, 0.2)",
+                  fill: true,
+                },
+                {
+                  label: "Water Depth (m)",
+                  data: filteredWaterDepthData,
+                  borderColor: "#3357FF",
+                  backgroundColor: "rgba(51, 87, 255, 0.2)",
+                  fill: true,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+            },
+          });
+        } else {
+          mainChartInstance.data.labels = filteredTimestamps;
+          mainChartInstance.data.datasets[0].data = filteredTemperatureData;
+          mainChartInstance.data.datasets[1].data = filteredTurbidityData;
+          mainChartInstance.data.datasets[2].data = filteredWaterDepthData;
+          mainChartInstance.update();
+        }
       }
+
+      setupRealTimeListener();
 
       let temperatureChart, turbidityChart, waterDepthChart; // Declare charts globally
 
@@ -544,7 +639,7 @@
           filterDataByTimeRange(event.target.value);
         });
 
-      fetchData();
+      setupRealTimeListener();
     </script>
   </body>
 </html>

@@ -1,8 +1,7 @@
-/* Global Styles */
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 
 body {
-  font-family: "Dm Sans", sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 16px;
   margin: 0;
   padding: 0;
@@ -22,10 +21,9 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.25); /* Transparent black background */
-  z-index: -1; /* Ensure the overlay is behind the content */
+  background: rgba(0, 46, 81, 0.50);
+  z-index: -1; 
 }
-
 
 body::-webkit-scrollbar {
   display: none;
@@ -71,7 +69,7 @@ body::-webkit-scrollbar {
   font-weight: 500;
   color: whitesmoke;
   padding-bottom: 15px;
-  margin: 0 25px; /* Space between menu items */
+  margin: 0 25px;
 }
 
 .link:hover,
@@ -97,7 +95,7 @@ body::-webkit-scrollbar {
 .nav-button {
   margin-left: auto;
   color: #004d80;
-  margin-right: 3.5rem; /* Adjusted to prevent the button from sticking */
+  margin-right: 3.5rem;
 }
 
 .nav-button .btn {
@@ -151,7 +149,7 @@ body::-webkit-scrollbar {
 
 h2 {
   color: whitesmoke;
-  font-size: 2.5rem;
+  font-size: 2rem;
   margin-bottom: 5px;
   text-align: center; /* Center header text */
 }
@@ -212,26 +210,28 @@ canvas {
   justify-content: space-around;
   margin-left: 20px;
   margin-right: 20px;
-  margin-bottom: 50px;
+  margin-bottom: 80px;
 }
 
 .chart-container {
   width: 30%;
   position: relative;
-  height: 200px;
-  /* Set height for individual charts */
+  height: 230px;
+  
 }
 
 .parameter-value {
   text-align: center;
-  font-size: 16px;
-  color: #333;
+  font-size: 20px;
+  color: whitesmoke;
+  font-weight: 600;
+  margin-top: -10px;
 }
 
 .chart-container h3 {
   color: whitesmoke;
   font-size: 1.8em;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .chart-container canvas {

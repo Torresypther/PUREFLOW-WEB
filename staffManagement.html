@@ -4,11 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="staffManagement.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+    />
+
     <script type="module" src="config.js"></script>
-    <title>Document</title>
+    <title>Admin User Management</title>
   </head>
   <body>
-    <!-- Navbar -->
+    <!-- html for navbar -->
     <nav class="nav">
       <div class="nav-logo">
         <p>PureFlow</p>
@@ -19,14 +24,6 @@
           <li>
             <a href="reportGeneration.html" id="reportLink" class="link"
               >Reports</a
-            >
-          </li>
-          <li>
-            <a
-              href="adminProfile.html"
-              id="adminProfileLink"
-              class="link"
-              >Admin Profile</a
             >
           </li>
           <li>
@@ -44,5 +41,473 @@
         <i class="bx bx-menu" onclick="myMenuFunction()"></i>
       </div>
     </nav>
+
+    <div id="customAlert" class="modal" style="display: none">
+      <div class="modal-content">
+        <i
+          id="alertIcon"
+          class="bi bi-exclamation-circle"
+          style="font-size: 2rem; color: #ff0000"
+        ></i>
+        <h2 id="alertTitle">Alert</h2>
+        <p id="alertMessage"></p>
+        <button class="btn primary-btn" id="alertOkBtn">OK</button>
+      </div>
+    </div>
+
+    <div id="customConfirm" class="modal" style="display: none">
+      <div class="modal-content">
+        <i
+          id="confirmIcon"
+          class="bi bi-question-circle"
+          style="font-size: 2rem; color: #ffc107"
+        ></i>
+        <h2 id="confirmTitle">Confirmation</h2>
+        <p id="confirmMessage"></p>
+        <div class="modal-buttons">
+          <button class="btn confirm-btn" id="confirmYesBtn">Yes</button>
+          <button class="btn cancel-btn" id="confirmNoBtn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-container">
+      <main class="main-content">
+        <header class="main-header">
+          <h1>Staff Management</h1>
+          <button class="btn primary-btn" id="addUserBtn">Add User</button>
+        </header>
+
+        <section class="user-table-section">
+          <div class="table-actions">
+            <input
+              type="text"
+              placeholder="Search users..."
+              class="search-input"
+              id="searchInput"
+            />
+            <select class="filter-select" id="statusFilter">
+              <option value="all">All Users</option>
+              <option value="Active">Active Users</option>
+              <option value="Inactive">Inactive Users</option>
+              <option value="On Leave">On Leave</option>
+            </select>
+          </div>
+          <table class="user-table">
+            <thead>
+              <tr>
+                <th>User ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Password</th>
+                <th>Role</th>
+                <th>Staff Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+
+    <div id="userModal" class="modal" style="display: none">
+      <div class="modal-content">
+        <h2 id="modalTitle">Add New User</h2>
+        <form id="userForm">
+          <label for="username">Username:</label>
+          <input type="text" id="username" name="username" required />
+
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email" required />
+
+          <label for="password">Password:</label>
+          <input type="text" id="password" name="password" required />
+
+          <label for="status">Staff Status:</label>
+          <select id="status" name="status" required>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+            <option value="On Leave">On Leave</option>
+          </select>
+
+          <div class="form-actions">
+            <button type="submit" class="btn primary-btn">Save</button>
+            <button type="button" class="btn secondary-btn" id="cancelBtn">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script type="module">
+      import {
+        getDocs,
+        collection,
+        query,
+        where,
+        addDoc,
+        updateDoc,
+        doc,
+        deleteDoc,
+        getDoc,
+      } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
+      import {
+        createUserWithEmailAndPassword,
+        updatePassword,
+      } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
+      import { db, auth } from "./config.js";
+
+      let editUserId = null;
+
+      async function checkDuplicateUser(email, username) {
+        const usersRef = collection(db, "users");
+        const querySnapshot = await getDocs(usersRef);
+        let isDuplicate = false;
+
+        querySnapshot.forEach((doc) => {
+          const userData = doc.data();
+          if (userData.email === email || userData.username === username) {
+            isDuplicate = true;
+          }
+        });
+
+        return isDuplicate;
+      }
+
+      async function fetchUsers() {
+        const searchInput = document
+          .getElementById("searchInput")
+          .value.toLowerCase();
+        const statusFilter = document.getElementById("statusFilter").value;
+
+        const usersRef = collection(db, "users");
+        let usersQuery = query(usersRef, where("role", "==", "Staff"));
+
+        if (statusFilter !== "all") {
+          usersQuery = query(usersQuery, where("status", "==", statusFilter));
+        }
+
+        try {
+          const querySnapshot = await getDocs(usersQuery);
+          const tableBody = document.querySelector(".user-table tbody");
+          tableBody.innerHTML = "";
+
+          if (querySnapshot.empty) {
+            console.log("No matching documents found.");
+          } else {
+            querySnapshot.forEach((doc) => {
+              const userData = doc.data();
+              const userId = doc.id;
+              const username = userData.username || "N/A";
+              const userEmail = userData.email || "N/A";
+              const password = userData.password || "N/A";
+              const userRole = userData.role || "N/A";
+              const status = userData.status || "N/A";
+
+              if (
+                username.toLowerCase().includes(searchInput) ||
+                userEmail.toLowerCase().includes(searchInput)
+              ) {
+                const tr = document.createElement("tr");
+                const statusClass =
+                  status === "Active"
+                    ? "active-status"
+                    : status === "Inactive"
+                    ? "inactive-status"
+                    : "on-leave-status";
+                tr.innerHTML = `
+                        <td>${userId}</td>
+                        <td>${username}</td>
+                        <td>${userEmail}</td>
+                        <td>${password}</td>
+                        <td>${userRole}</td>
+                        <td><span class="status ${statusClass}">${status}</span></td>
+                        <td>
+                          <button class="btn edit-btn" data-user-id="${userId}">Edit</button>
+                          <button class="btn delete-btn" data-user-id="${userId}">Delete</button>
+                        </td>
+                      `;
+                tableBody.appendChild(tr);
+              }
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching users:", error);
+        }
+      }
+
+      document.getElementById("addUserBtn").onclick = () => {
+        document.getElementById("userForm").reset();
+        document.getElementById("modalTitle").textContent = "Add New User";
+        editUserId = null;
+        document.getElementById("userModal").style.display = "block";
+      };
+
+      function closeModal() {
+        document.getElementById("userModal").style.display = "none";
+      }
+
+      document.getElementById("userForm").onsubmit = async (event) => {
+        event.preventDefault();
+
+        const username = document.getElementById("username").value;
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const role = "Staff";
+        const status = document.getElementById("status").value;
+
+        if (!editUserId) {
+          const isDuplicate = await checkDuplicateUser(email, username);
+          if (isDuplicate) {
+            showAlert(
+              "A user with this email or username already exists.",
+              "Duplicate User"
+            );
+          } else {
+            showConfirm(
+              `Are you sure you want to add a new user?`,
+              "Add User Confirmation",
+              async () => {
+                try {
+                  // Create the user in Firebase Authentication
+                  const userCredential = await createUserWithEmailAndPassword(
+                    auth,
+                    email,
+                    password
+                  );
+                  const user = userCredential.user;
+
+                  await addDoc(collection(db, "users"), {
+                    username,
+                    email,
+                    password,
+                    role,
+                    status,
+                    userId: user.uid,
+                  });
+
+                  closeModal();
+                  fetchUsers();
+                  showAlert("User added successfully!", "Success", "success");
+                } catch (error) {
+                  showAlert(
+                    "Error adding user: " + error.message,
+                    "Error",
+                    "error"
+                  );
+                }
+              }
+            );
+          }
+        } else {
+          // Handling when editing an existing user
+          showConfirm(
+            `Are you sure you want to update this user?`,
+            "Edit User Confirmation",
+            async () => {
+              try {
+                const userRef = doc(db, "users", editUserId);
+                await updateDoc(userRef, {
+                  username,
+                  email,
+                  password,
+                  role,
+                  status,
+                });
+
+                if (password) {
+                  const user = auth.currentUser;
+                  if (user) {
+                    await updatePassword(user, password);
+                  }
+                }
+
+                closeModal();
+                fetchUsers();
+                showAlert("User updated successfully!", "Success", "success");
+              } catch (error) {
+                showAlert(
+                  "Error updating user: " + error.message,
+                  "Error",
+                  "error"
+                );
+              }
+            }
+          );
+        } 
+      };
+
+      async function updateUser(userId, newPassword) {
+        const userRef = doc(db, "users", userId);
+        try {
+          // Update the Firestore database with the new password
+          await updateDoc(userRef, {
+            password: newPassword, // Update password field in Firestore
+          });
+
+          // Update the password in Firebase Authentication
+          const user = auth.currentUser;
+          if (user && user.uid === userId) {
+            await updatePassword(user, newPassword);
+            console.log(
+              "Password updated successfully in Firebase Authentication!"
+            );
+          } else {
+            console.log("User is not authenticated or mismatched");
+          }
+
+          fetchUsers(); // Refresh user list after update
+          showAlert("User updated successfully!", "Success", "success");
+        } catch (error) {
+          console.error("Error updating user password:", error);
+          showAlert(
+            "Error updating user password: " + error.message,
+            "Error",
+            "error"
+          );
+        }
+      }
+
+      async function editUser(userId) {
+        editUserId = userId;
+        const userRef = doc(db, "users", userId);
+
+        try {
+          const docSnap = await getDoc(userRef);
+
+          if (docSnap.exists()) {
+            const userData = docSnap.data();
+            document.getElementById("username").value = userData.username || "";
+            document.getElementById("email").value = userData.email || "";
+            document.getElementById("password").value = userData.password || "";
+            document.getElementById("status").value = userData.status || "";
+
+            document.getElementById("modalTitle").textContent = "Edit User";
+            document.getElementById("userModal").style.display = "block";
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      }
+
+      async function deleteUser(userId) {
+        showConfirm(
+          "Are you sure you want to delete this user?",
+          "Delete Confirmation",
+          async () => {
+            try {
+              const userRef = doc(db, "users", userId);
+              await deleteDoc(userRef);
+              console.log(`User deleted: ${userId}`);
+              fetchUsers();
+              showAlert("User deleted successfully!", "Success", "success");
+            } catch (error) {
+              console.error("Error deleting user:", error);
+            }
+          }
+        );
+      }
+
+      document.getElementById("cancelBtn").onclick = closeModal;
+
+      window.onload = () => {
+        fetchUsers();
+      };
+
+      document
+        .querySelector(".user-table tbody")
+        .addEventListener("click", (event) => {
+          if (event.target.classList.contains("edit-btn")) {
+            const userId = event.target.dataset.userId;
+            editUser(userId);
+          } else if (event.target.classList.contains("delete-btn")) {
+            const userId = event.target.dataset.userId;
+            deleteUser(userId);
+          }
+        });
+
+      document
+        .getElementById("statusFilter")
+        .addEventListener("change", (event) => {
+          const status = event.target.value;
+          const searchTerm = document.getElementById("searchInput").value;
+          fetchUsers(status, searchTerm);
+        });
+
+      document
+        .getElementById("searchInput")
+        .addEventListener("input", (event) => {
+          const searchTerm = event.target.value;
+          const status = document.getElementById("statusFilter").value;
+          fetchUsers(status, searchTerm);
+        });
+
+      function showAlert(message, title = "Alert", type = "error") {
+        const customAlert = document.getElementById("customAlert");
+        const alertIcon = document.getElementById("alertIcon");
+        const alertMessage = document.getElementById("alertMessage");
+        const alertTitle = document.getElementById("alertTitle");
+
+        alertMessage.textContent = message;
+        alertTitle.textContent = title;
+
+        // Set the icon and color based on alert type
+        if (type === "success") {
+          alertIcon.className = "bi bi-check-circle";
+          alertIcon.style.color = "#28a745";
+        } else if (type === "warning") {
+          alertIcon.className = "bi bi-exclamation-triangle";
+          alertIcon.style.color = "#ffc107";
+        } else {
+          alertIcon.className = "bi bi-exclamation-circle";
+          alertIcon.style.color = "#ff0000";
+        }
+
+        customAlert.style.display = "flex";
+
+        const alertOkBtn = document.getElementById("alertOkBtn");
+        alertOkBtn.onclick = () => {
+          customAlert.style.display = "none";
+        };
+      }
+
+      function showConfirm(
+        message,
+        title = "Confirmation",
+        onConfirm = () => {},
+        onCancel = () => {}
+      ) {
+        const userModal = document.getElementById("userModal");
+        const customConfirm = document.getElementById("customConfirm");
+        const confirmMessage = document.getElementById("confirmMessage");
+        const confirmTitle = document.getElementById("confirmTitle");
+        const confirmYesBtn = document.getElementById("confirmYesBtn");
+        const confirmNoBtn = document.getElementById("confirmNoBtn");
+
+        // Hide the user modal when confirmation modal appears
+        if (userModal) {
+          userModal.style.display = "none";
+        }
+
+        confirmMessage.textContent = message;
+        confirmTitle.textContent = title;
+
+        customConfirm.style.display = "flex"; // Show the confirmation modal
+
+        // Handle "Yes" button click
+        confirmYesBtn.onclick = () => {
+          customConfirm.style.display = "none"; // Hide confirmation modal
+          onConfirm(); // Execute the confirm callback
+        };
+
+        // Handle "No" button click (cancel)
+        confirmNoBtn.onclick = () => {
+          customConfirm.style.display = "none"; // Hide confirmation modal
+          onCancel(); // Execute the cancel callback
+        };
+      }
+    </script>
   </body>
 </html>

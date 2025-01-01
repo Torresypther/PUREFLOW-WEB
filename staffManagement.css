@@ -1,30 +1,29 @@
 /* Global Styles */
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap");
 
 body {
-  font-family: "Dm Sans", sans-serif;
-  font-size: 16px;
+  font-family: "DM Sans", sans-serif;
+  font-size: 18px;
   margin: 0;
   padding: 0;
-  padding-top: 100px;
-  padding-bottom: 80px;
   background: url("photos/pexels-enginakyurt-1435752.jpg");
   background-size: cover;
   background-repeat: no-repeat;
   background-attachment: fixed;
-  position: relative; /* Set position to relative for the pseudo-element */
-  height: 100vh; /* Ensure the body takes up the full height of the viewport */
+  position: relative;
+  height: 100vh;
+  overflow: hidden; /* Prevent scrolling if no overflow */
 }
 
 body::before {
   content: "";
-  position: absolute; /* Position the overlay relative to the body */
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%; /* Ensure it covers the entire height of the viewport */
-  background: rgba(0, 0, 0, 0.25); /* Transparent black background */
-  z-index: -1; /* Ensure the overlay is behind the content */
+  height: 100%;
+  background: rgba(0, 46, 81, 0.50);
+  z-index: -1;
 }
 
 body::-webkit-scrollbar {
@@ -36,13 +35,13 @@ body::-webkit-scrollbar {
   position: fixed;
   top: 0;
   display: flex;
-  justify-content: space-between; /* Align logo, menu, and button */
+  justify-content: space-between;
   align-items: center;
   width: 100%;
   height: 100px;
   background: linear-gradient(rgba(0, 46, 81), transparent);
   z-index: 100;
-  padding: 0 30px; /* Add padding to prevent sticking to the sides */
+  padding: 0 30px;
 }
 
 .nav-logo p {
@@ -53,13 +52,13 @@ body::-webkit-scrollbar {
 
 .nav-menu {
   display: flex;
-  justify-content: center; /* Center the menu items */
+  justify-content: center;
   flex-grow: 1;
 }
 
 .nav-menu ul {
   display: flex;
-  margin: 0; /* Removes default margin */
+  margin: 0;
 }
 
 .nav-menu ul li {
@@ -71,7 +70,7 @@ body::-webkit-scrollbar {
   font-weight: 500;
   color: whitesmoke;
   padding-bottom: 15px;
-  margin: 0 25px; /* Space between menu items */
+  margin: 0 25px;
 }
 
 .link:hover,
@@ -85,7 +84,7 @@ body::-webkit-scrollbar {
   font-weight: 500;
   color: whitesmoke;
   padding-bottom: 15px;
-  margin: 0 25px; /* Space between menu items */
+  margin: 0 25px;
 }
 
 .hidden:hover,
@@ -97,23 +96,694 @@ body::-webkit-scrollbar {
 .nav-button {
   margin-left: auto;
   color: #004d80;
-  margin-right: 3.5rem; /* Adjusted to prevent the button from sticking */
+  margin-right: 3.5rem;
 }
 
 .nav-button .btn {
   width: 180px;
   height: 45px;
   font-weight: 500;
-  background: #eef8ff; /* Darker button color */
+  background: #eef8ff;
   color: #004d80;
   border: none;
   border-radius: 30px;
   cursor: pointer;
   transition: 0.3s ease;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow effect */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .btn:hover {
   background: #dcf2ff;
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3); /* More intense hover effect */
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Main Content */
+.main-content {
+  position: flex;
+  justify-content: center;
+  margin: auto;
+  margin-top: 10rem; /* Position the content correctly */
+  width: 90%;
+  padding: 25px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5px);
+  z-index: 1;
+}
+
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.main-header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #003354;
+}
+
+.main-header .btn {
+  width: 160px;
+  height: 45px;
+  font-size: 16px;
+  font-weight: 700;
+  background: #1abc9c;
+  color: #fff;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.main-header .btn:hover {
+  background: #16a085;
+}
+
+/* Table Section */
+.user-table-section {
+  margin-top: 20px;
+}
+
+.table-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.search-input,
+.filter-select {
+  width: 300px;
+  padding: 12px;
+  border: 1px solid #d6dce6;
+  border-radius: 6px;
+  font-size: 16px;
+  background: #fff;
+  color: #003354;
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.user-table th,
+.user-table td {
+  text-align: left;
+  padding: 14px 16px;
+  font-size: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.user-table th {
+  background: #f7f9fc;
+  color: #003354;
+  font-weight: 700;
+}
+
+.user-table td {
+  color: #003354;
+}
+
+.status {
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.edit-btn,
+.delete-btn {
+  padding: 8px 12px;
+  width: 80px;
+  height: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 150px;
+  cursor: pointer;
+  border: none;
+  transition: 0.3s ease;
+}
+
+.edit-btn {
+  background-color: #3498db;
+  color: #fff;
+}
+
+.edit-btn:hover {
+  background-color: #2980b9;
+}
+
+.delete-btn {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+.delete-btn:hover {
+  background-color: #c0392b;
+}
+
+/* Modal Styles */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgba(0, 0, 0, 0.4); /* Black with opacity */
+  padding-top: 60px;
+}
+
+.modal-content {
+  background-color: white;
+  margin: 5% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+}
+
+.modal-content h2 {
+  margin: 0;
+  padding-bottom: 20px;
+}
+
+.modal input,
+.modal select {
+  width: 100%;
+  padding: 8px;
+  margin: 10px 0;
+}
+
+.modal .btn {
+  padding: 10px 20px;
+  margin-top: 10px;
+}
+
+/* Button Styles */
+.primary-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.secondary-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+/* Status Styling */
+.status {
+  display: flex;
+  width: 100px; 
+  height: 24px; 
+  padding: auto;  
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-weight: bold;
+  border-radius: 150px;
+}
+
+.active-status {
+  background-color: #4CAF50;  /* Green background for active */
+  color: white;
+}
+
+.inactive-status {
+  background-color: #f44336;  /* Red background for inactive */
+  color: white;
+}
+
+.on-leave-status {
+  background-color: orange;
+  color: white;
+}
+
+/* Modal background */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Modal content box */
+.modal-content {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;  /* Set max width to 500px */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  text-align: left;
+  box-sizing: border-box;
+  margin-top: 2%;  /* Reduced top margin for better centering */
+}
+
+/* Modal title */
+.modal-content h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #003354;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Form fields (labels and inputs) */
+.modal-content label {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 5px;
+  display: block;
+}
+
+/* Input fields */
+.modal-content input,
+.modal-content select {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  box-sizing: border-box;
+}
+
+/* Focus effect for inputs */
+.modal-content input:focus,
+.modal-content select:focus {
+  border-color: #3498db;
+  outline: none;
+}
+
+/* Buttons at the bottom spanning both columns */
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  width: 100%;
+  gap: 10px;
+}
+
+.form-actions button {
+  padding: 12px 25px;
+  font-size: 16px;
+  text-transform: uppercase;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 48%;  /* Buttons take up almost the entire width */
+}
+
+/* Primary button styles */
+.primary-btn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+}
+
+.primary-btn:hover {
+  background-color: #2980b9;
+}
+
+/* Secondary button styles */
+.secondary-btn {
+  background-color: #f2f2f2;
+  color: #333;
+  border: none;
+}
+
+.secondary-btn:hover {
+  background-color: #e0e0e0;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 90%;
+    padding: 15px;
+  }
+
+  .modal-content h2 {
+    font-size: 18px;
+  }
+
+  .modal-content input,
+  .modal-content select {
+    padding: 10px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+/* Modal background */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  padding: 20px;  /* Added padding to prevent overflow */
+  box-sizing: border-box;
+  overflow: hidden;  /* Prevent body scroll */
+}
+
+/* Modal content box */
+.modal-content {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;  /* Set max width to 450px */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  text-align: left;
+  box-sizing: border-box;
+  margin-top: 40px;  /* Reduced top margin */
+  margin-bottom: 10px;  /* Reduced bottom margin */
+}
+
+/* Modal title */
+.modal-content h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #003354;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+/* Form fields (labels and inputs) */
+.modal-content label {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 5px;
+  display: block;
+}
+
+/* Input fields */
+.modal-content input,
+.modal-content select {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  box-sizing: border-box;
+}
+
+/* Focus effect for inputs */
+.modal-content input:focus,
+.modal-content select:focus {
+  border-color: #3498db;
+  outline: none;
+}
+
+/* Buttons at the bottom spanning both columns */
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  width: 100%;
+  gap: 10px;
+}
+
+.form-actions button {
+  padding: 12px 25px;
+  font-size: 16px;
+  text-transform: uppercase;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 48%;  /* Buttons take up almost the entire width */
+}
+
+/* Primary button styles */
+.primary-btn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+}
+
+.primary-btn:hover {
+  background-color: #2980b9;
+}
+
+/* Secondary button styles */
+.secondary-btn {
+  background-color: #f2f2f2;
+  color: #333;
+  border: none;
+}
+
+.secondary-btn:hover {
+  background-color: #e0e0e0;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 90%;
+    padding: 15px;
+  }
+
+  .modal-content h2 {
+    font-size: 18px;
+  }
+
+  .modal-content input,
+  .modal-content select {
+    padding: 10px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+
+/* Custom Alert Modal */
+#customAlert {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.5s ease-in-out; /* Fade-in animation */
+}
+
+#customAlert .modal-content {
+  background-color: #fff;
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  animation: bounceIn 0.5s ease-in-out; /* Bounce-in animation */
+}
+
+#customAlert .modal-content i {
+  margin-bottom: 15px;
+  animation: pulse 1s infinite; /* Pulse effect for the icon */
+}
+
+#customAlert h2 {
+  margin: 0 0 10px;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+#customAlert p {
+  margin: 0 0 20px;
+  font-size: 1rem;
+  color: #666;
+}
+
+#customAlert .btn {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#customAlert .primary-btn {
+  background-color: #007bff;
+  color: #fff;
+  transition: background-color 0.3s ease;
+}
+
+#customAlert .primary-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.5);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* Custom Confirmation Modal */
+#customConfirm {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.5s ease-in-out; /* Fade-in animation */
+}
+
+#customConfirm .modal-content {
+  background-color: #fff;
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  animation: scaleIn 0.4s ease-in-out; /* Scale-in animation */
+}
+
+#customConfirm .modal-content i {
+  margin-bottom: 15px;
+  animation: pulse 1s infinite; /* Pulse effect for the icon */
+}
+
+#customConfirm h2 {
+  margin: 0 0 10px;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+#customConfirm p {
+  margin: 0 0 20px;
+  font-size: 1rem;
+  color: #666;
+}
+
+#customConfirm .modal-buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+#customConfirm .btn {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#customConfirm .confirm-btn {
+  background-color: #28a745;
+  color: #fff;
+}
+
+#customConfirm .confirm-btn:hover {
+  background-color: #218838;
+}
+
+#customConfirm .cancel-btn {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+#customConfirm .cancel-btn:hover {
+  background-color: #c82333;
+}
+
+/* Animations */
+@keyframes scaleIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
 }
