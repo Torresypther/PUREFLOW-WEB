@@ -8,12 +8,19 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
       rel="stylesheet"
     />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+    />
 
     <script type="module" src="config.js"></script>
     <title>Admin User Management</title>
   </head>
   <body>
-    <!-- html for navbar -->
     <nav class="nav">
       <div class="nav-logo">
         <p>PureFlow</p>
@@ -35,12 +42,148 @@
         </ul>
       </div>
       <div class="nav-button">
-        <button class="btn white-btn hidden" id="signOutBtn">Sign Out</button>
-      </div>
-      <div class="nav-menu-btn">
-        <i class="bx bx-menu" onclick="myMenuFunction()"></i>
+        <button class="btn white-btn" id="signInBtn" style="display: block">
+          <a href="login.html">Sign In</a>
+        </button>
+        <button
+          class="btn white-btn hidden"
+          id="signOutBtn"
+          style="display: none"
+        >
+          Sign Out
+        </button>
       </div>
     </nav>
+
+    <script type="module">
+      import { db, auth } from "./config.js";
+      import {
+        getDocs,
+        query,
+        collection,
+        where,
+      } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
+      import {
+        onAuthStateChanged,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
+
+      const signInBtn = document.getElementById("signInBtn");
+      const signOutBtn = document.getElementById("signOutBtn");
+
+      function showConfirmationDialog() {
+        confirmationDialog.style.display = "flex";
+      }
+
+      // Redirect to login page
+      proceedToLogin.addEventListener("click", () => {
+        window.location.href = "login.html"; // Replace with the login page URL
+      });
+
+      async function getUserRoleByEmail(email) {
+        try {
+          console.log("Fetching role for email:", email);
+          const userQuery = query(
+            collection(db, "users"),
+            where("email", "==", email)
+          );
+          const querySnapshot = await getDocs(userQuery);
+
+          if (querySnapshot.empty) {
+            console.error("No document found for email:", email);
+            return null;
+          } else {
+            const userDoc = querySnapshot.docs[0];
+            console.log("User document data:", userDoc.data());
+            return userDoc.data().role;
+          }
+        } catch (error) {
+          console.error("Error fetching user role:", error.message);
+          return null;
+        }
+      }
+
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          console.log("User is logged in:", user);
+          const userRole = await getUserRoleByEmail(user.email);
+
+          if (userRole === "Admin") {
+            grantAccessForAdmin();
+          } else if (userRole === "Staff") {
+            grantAccessForStaff();
+          } else {
+            console.warn(
+              "Role not recognized or role field is missing. Restricting access."
+            );
+            restrictAccess();
+          }
+
+          // Hide the Sign In button and show the Sign Out button when logged in
+          if (signInBtn) signInBtn.style.display = "none";
+          if (signOutBtn) signOutBtn.style.display = "inline-block";
+        } else {
+          console.log("No user logged in. Redirecting to default page.");
+          // Show the Sign In button and hide the Sign Out button when logged out
+          if (signInBtn) signInBtn.style.display = "inline-block";
+          if (signOutBtn) signOutBtn.style.display = "none";
+
+          restrictAccess();
+          showConfirmationDialog();
+        }
+      });
+
+      function restrictAccess() {
+        if (staffLink) {
+          staffLink.style.pointerEvents = "none";
+          staffLink.style.opacity = "0.5";
+        }
+        if (reportLink) {
+          reportLink.style.pointerEvents = "none";
+          reportLink.style.opacity = "0.5";
+        }
+
+        console.log("Access restricted.");
+      }
+
+      function grantAccessForAdmin() {
+        if (staffLink) {
+          staffLink.style.pointerEvents = "auto";
+          staffLink.style.opacity = "1";
+        }
+        if (reportLink) {
+          reportLink.style.pointerEvents = "auto";
+          reportLink.style.opacity = "1";
+        }
+
+        console.log("Admin access granted.");
+      }
+
+      function grantAccessForStaff() {
+        if (staffLink) {
+          staffLink.style.pointerEvents = "none";
+          staffLink.style.opacity = "0.5";
+        }
+        if (reportLink) {
+          reportLink.style.pointerEvents = "auto";
+          reportLink.style.opacity = "1";
+        }
+
+        console.log("Staff access granted.");
+      }
+
+      signOutBtn.addEventListener("click", async () => {
+        try {
+          await signOut(auth);
+          console.log("Sign-out successful.");
+          window.location.href = "index.html"; // Redirect to homepage after sign-out
+        } catch (error) {
+          console.error("Sign-out failed:", error);
+        }
+      });
+
+      restrictAccess();
+    </script>
 
     <div id="customAlert" class="modal" style="display: none">
       <div class="modal-content">
@@ -55,7 +198,39 @@
       </div>
     </div>
 
-    <div id="customConfirm" class="modal" style="display: none">
+    <!-- User Modal -->
+    <div id="userModal" class="modal" style="display: none; z-index: 1050">
+      <div class="modal-content">
+        <h2 id="modalTitle">Add New User</h2>
+        <form id="userForm">
+          <label for="username">Username:</label>
+          <input type="text" id="username" name="username" required />
+
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email" required />
+
+          <label for="password">Password:</label>
+          <input type="text" id="password" name="password" required />
+
+          <label for="status">Staff Status:</label>
+          <select id="status" name="status" required>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+            <option value="On Leave">On Leave</option>
+          </select>
+
+          <div class="form-actions">
+            <button type="submit" class="btn primary-btn">Save</button>
+            <button type="button" class="btn secondary-btn" id="cancelBtn">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="customConfirm" class="modal" style="display: none; z-index: 1060">
       <div class="modal-content">
         <i
           id="confirmIcon"
@@ -71,10 +246,34 @@
       </div>
     </div>
 
+    <div id="confirmationDialog" class="confirmation-dialog">
+      <div class="dialog-box">
+        <h3>Access Restricted</h3>
+        <p>You are not logged in. Please choose an option below to proceed.</p>
+        <button id="proceedToLogin">Proceed to Login Page</button>
+        <a href="index.html" id="proceedWithoutAccount"
+          >Proceed Without an Account</a
+        >
+      </div>
+    </div>
+
     <div class="admin-container">
       <main class="main-content">
         <header class="main-header">
           <h1>Staff Management</h1>
+          <div class="notification-container">
+            <button
+              class="btn notification-btn"
+              id="notificationBell"
+              data-bs-toggle="modal"
+              data-bs-target="#notificationModal"
+            >
+              <i class="bi bi-bell"></i>
+              <span id="notificationBadge" class="badge bg-danger d-none"
+                >0</span
+              >
+            </button>
+          </div>
           <button class="btn primary-btn" id="addUserBtn">Add User</button>
         </header>
 
@@ -110,36 +309,259 @@
         </section>
       </main>
     </div>
-
-    <div id="userModal" class="modal" style="display: none">
-      <div class="modal-content">
-        <h2 id="modalTitle">Add New User</h2>
-        <form id="userForm">
-          <label for="username">Username:</label>
-          <input type="text" id="username" name="username" required />
-
-          <label for="email">Email:</label>
-          <input type="email" id="email" name="email" required />
-
-          <label for="password">Password:</label>
-          <input type="text" id="password" name="password" required />
-
-          <label for="status">Staff Status:</label>
-          <select id="status" name="status" required>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-            <option value="On Leave">On Leave</option>
-          </select>
-
-          <div class="form-actions">
-            <button type="submit" class="btn primary-btn">Save</button>
-            <button type="button" class="btn secondary-btn" id="cancelBtn">
-              Cancel
-            </button>
+    <!-- Notification Modal -->
+    <div
+      class="modal fade"
+      id="notificationModal"
+      tabindex="-1"
+      aria-labelledby="notificationModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="notificationModalLabel">
+              Notifications
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
           </div>
-        </form>
+          <div class="modal-body">
+            <ul id="notificationList" class="list-group">
+              <li
+                class="list-group-item d-flex justify-content-between align-items-center"
+              >
+                <span>Sample Notification 1</span>
+                <button class="btn btn-primary btn-sm">Action</button>
+              </li>
+              <li
+                class="list-group-item d-flex justify-content-between align-items-center"
+              >
+                <span>Sample Notification 2</span>
+                <button class="btn btn-primary btn-sm">Action</button>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="module">
+      import { db } from "./config.js";
+      import {
+        collection,
+        getDocs,
+        doc,
+        setDoc,
+        deleteDoc,
+        onSnapshot,
+      } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
+
+      const notificationBell = document.getElementById("notificationBell");
+      const notificationBadge = document.getElementById("notificationBadge");
+      const notificationList = document.getElementById("notificationList");
+
+      console.log("Script initialized.");
+
+      function listenForNotifications() {
+        console.log("Listening for notifications...");
+        try {
+          const notificationsRef = collection(db, "requests");
+
+          onSnapshot(notificationsRef, (snapshot) => {
+            const notifications = [];
+            snapshot.forEach((doc) => {
+              notifications.push({ id: doc.id, ...doc.data() });
+            });
+            updateNotificationUI(notifications);
+          });
+        } catch (error) {
+          console.error("Error setting up real-time listener:", error.message);
+        }
+      }
+
+      function updateNotificationUI(notifications) {
+        notificationList.innerHTML = "";
+
+        if (notifications.length === 0) {
+          const noNotificationsItem = document.createElement("li");
+          noNotificationsItem.classList.add("list-group-item", "text-center");
+          noNotificationsItem.textContent = "No new notifications.";
+          notificationList.appendChild(noNotificationsItem);
+          notificationBadge.classList.add("d-none");
+          return;
+        }
+
+        notifications.forEach((notification) => {
+          const listItem = document.createElement("li");
+          listItem.classList.add(
+            "list-group-item",
+            "d-flex",
+            "justify-content-between",
+            "align-items-center"
+          );
+
+          const fullName = `${notification.firstname || "Unknown"} ${
+            notification.lastname || "Unknown"
+          }`;
+          const message = document.createElement("span");
+          message.textContent = `${fullName.trim()} (${
+            notification.sex || "Not Specified"
+          }) has requested an account with staff privileges.`;
+
+          const autoAddButton = document.createElement("button");
+          autoAddButton.classList.add("btn", "btn-sm");
+          autoAddButton.textContent = "Create Account";
+          autoAddButton.onclick = () =>
+            showConfirm(
+              `Do you want to create an account for ${fullName.trim()}?`,
+              "Create Account",
+              () => createUserAccount(notification),
+              () => console.log("Account creation canceled")
+            );
+
+          listItem.appendChild(message);
+          listItem.appendChild(autoAddButton);
+          notificationList.appendChild(listItem);
+        });
+
+        // Show the count on the notification badge
+        notificationBadge.textContent = notifications.length;
+        notificationBadge.classList.remove("d-none");
+      }
+
+      function generateCredentials(notification) {
+        const randomThreeDigit = Math.floor(100 + Math.random() * 900);
+        const username = `${
+          notification.firstname || "user"
+        }${randomThreeDigit}`.toLowerCase();
+        const email = `${username}@example.com`;
+        const password = `${
+          notification.firstname?.charAt(0).toUpperCase() || "U"
+        }${notification.lastname || "ser"}${randomThreeDigit}!`;
+
+        return { username, email, password };
+      }
+
+      async function createUserAccount(notification) {
+        const credentials = generateCredentials(notification);
+
+        console.log("Creating user account with credentials:", credentials);
+
+        try {
+          const usersRef = doc(db, "users", credentials.username);
+          await setDoc(usersRef, {
+            username: credentials.username,
+            email: credentials.email,
+            password: credentials.password,
+            role: "Staff",
+            created_at: new Date().toISOString(),
+          });
+
+          console.log(
+            `User account for ${credentials.username} created successfully.`
+          );
+          showAlert(
+            "Account Created",
+            "Success",
+            "success",
+            "User account for ${credentials.username} has been successfully created."
+          );
+
+          await deleteNotification(notification.id);
+        } catch (error) {
+          console.error("Error creating user account:", error.message);
+          alert(`Failed to create user account: ${error.message}`);
+        }
+      }
+
+      async function deleteNotification(notificationId) {
+        try {
+          const notificationDocRef = doc(db, "requests", notificationId);
+          await deleteDoc(notificationDocRef);
+          console.log(`Notification ${notificationId} deleted successfully.`);
+        } catch (error) {
+          console.error("Error deleting notification:", error.message);
+        }
+      }
+
+      function showAlert(message, title = "Alert", type = "error") {
+        const customAlert = document.getElementById("customAlert");
+        const alertIcon = document.getElementById("alertIcon");
+        const alertMessage = document.getElementById("alertMessage");
+        const alertTitle = document.getElementById("alertTitle");
+
+        alertMessage.textContent = message;
+        alertTitle.textContent = title;
+
+        // Set the icon and color based on alert type
+        if (type === "success") {
+          alertIcon.className = "bi bi-check-circle";
+          alertIcon.style.color = "#28a745";
+        } else if (type === "warning") {
+          alertIcon.className = "bi bi-exclamation-triangle";
+          alertIcon.style.color = "#ffc107";
+        } else {
+          alertIcon.className = "bi bi-exclamation-circle";
+          alertIcon.style.color = "#ff0000";
+        }
+
+        customAlert.style.display = "flex";
+
+        const alertOkBtn = document.getElementById("alertOkBtn");
+        alertOkBtn.onclick = () => {
+          customAlert.style.display = "none";
+        };
+      }
+
+      function showConfirm(
+        message,
+        title = "Confirmation",
+        onConfirm = () => {},
+        onCancel = () => {}
+      ) {
+        const userModal = document.getElementById("userModal");
+        const customConfirm = document.getElementById("customConfirm");
+        const confirmMessage = document.getElementById("confirmMessage");
+        const confirmTitle = document.getElementById("confirmTitle");
+        const confirmYesBtn = document.getElementById("confirmYesBtn");
+        const confirmNoBtn = document.getElementById("confirmNoBtn");
+
+        // Hide the user modal when confirmation modal appears
+        if (userModal) {
+          userModal.style.display = "none";
+        }
+
+        confirmMessage.textContent = message;
+        confirmTitle.textContent = title;
+
+        customConfirm.style.display = "flex"; // Show the confirmation modal
+
+        // Handle "Yes" button click
+        confirmYesBtn.onclick = () => {
+          customConfirm.style.display = "none"; // Hide confirmation modal
+          onConfirm(); // Execute the confirm callback
+        };
+
+        // Handle "No" button click (cancel)
+        confirmNoBtn.onclick = () => {
+          customConfirm.style.display = "none"; // Hide confirmation modal
+          onCancel(); // Execute the cancel callback
+        };
+      }
+
+      // Event listener to fetch notifications when the bell is clicked
+      notificationBell.addEventListener("click", listenForNotifications);
+
+      // Initial fetch to update the badge count on page load
+      listenForNotifications();
+    </script>
 
     <script type="module">
       import {
@@ -336,7 +758,7 @@
               }
             }
           );
-        } 
+        }
       };
 
       async function updateUser(userId, newPassword) {

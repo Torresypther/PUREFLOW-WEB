@@ -41,13 +41,30 @@
         </div>
       </nav>
 
+      <div id="customAlert" class="modal" style="display: none">
+        <div class="modal-content">
+          <i
+            id="alertIcon"
+            class="bi bi-exclamation-circle"
+            style="font-size: 2rem; color: #ff0000"
+          ></i>
+          <h2 id="alertTitle">Alert</h2>
+          <p id="alertMessage"></p>
+          <button class="btn primary-btn" id="alertOkBtn">OK</button>
+        </div>
+      </div>
+
       <div class="form-box">
         <!-- Login Form -->
         <div class="login-container" id="login">
           <div class="top">
             <span>
               Don't have an account?
-              <a href="#" onclick="requestAccount()">Request an Account</a>
+              <a
+                id="requestBtn"
+                style="text-decoration: underline; cursor: pointer"
+                >Request an Account</a
+              >
             </span>
             <header>Login</header>
           </div>
@@ -69,22 +86,46 @@
               placeholder="Password"
             />
             <i class="bx bx-lock-alt"></i>
-            <i class="bx bx-show" id="togglePassword" style="cursor: pointer;"></i>
+            <i
+              class="bx bx-show"
+              id="togglePassword"
+              style="cursor: pointer"
+            ></i>
           </div>
-          
 
           <input type="submit" class="submit" value="Sign In" id="loginBtn" />
-
-          <div class="two-col">
-            <div class="one">
-              <input type="checkbox" id="login-check" />
-              <label for="login-check"> Remember Me</label>
-            </div>
-            <div class="two">
-              <label><a href="#">Forgot password?</a></label>
-            </div>
-          </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Request Account Modal -->
+    <div id="userModal" class="modal" style="display: none">
+      <div class="modal-content">
+        <h2 id="modalTitle">Request Account Form</h2>
+        <form id="userForm">
+          <label for="fname">First Name:</label>
+          <input type="text" id="fname" name="fname" required />
+
+          <label for="lname">Last Name:</label>
+          <input type="text" id="lname" name="lname" required />
+
+          <label for="mname">Middle Name:</label>
+          <input type="text" id="mname" name="mname" required />
+
+          <label for="sex">Sex:</label>
+          <select id="sex" name="sex" required>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="N/A">N/A</option>
+          </select>
+
+          <div class="form-actions">
+            <button type="submit" class="btn primary-btn">Save</button>
+            <button type="button" class="btn secondary-btn" id="cancelBtn">
+              Cancel
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -108,12 +149,13 @@
     <script type="module">
       import { db, auth } from "./config.js";
       import {
+        collection,
+        addDoc,
         getDoc,
         doc,
       } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
       import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
 
-      // Handle login process
       async function handleLogin() {
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
@@ -257,6 +299,75 @@
           togglePasswordIcon.classList.add("bx-show");
         }
       });
+
+      document.getElementById("requestBtn").onclick = () => {
+        document.getElementById("userForm").reset();
+        document.getElementById("modalTitle").textContent =
+          "Request Staff Account";
+        document.getElementById("userModal").style.display = "block";
+      };
+
+      function closeModal() {
+        document.getElementById("userModal").style.display = "none";
+      }
+
+      document.getElementById("cancelBtn").onclick = closeModal;
+
+      document.getElementById("userForm").onsubmit = async (event) => {
+        event.preventDefault();
+
+        const firstname = document.getElementById("fname").value;
+        const lastname = document.getElementById("lname").value;
+        const middlename = document.getElementById("mname").value;
+        const sex = document.getElementById("sex").value;
+
+        try {
+          await addDoc(collection(db, "requests"), {
+            firstname,
+            lastname,
+            middlename,
+            sex,
+          });
+
+          closeModal();
+          showAlert("User data submitted successfully!", "Success", "success");
+        } catch (error) {
+          showAlert(
+            "Error submitting data: " + error.message,
+            "Error",
+            "error"
+          );
+        }
+      };
+
+      function showAlert(message, title = "Alert", type = "error") {
+        const customAlert = document.getElementById("customAlert");
+        const alertIcon = document.getElementById("alertIcon");
+        const alertMessage = document.getElementById("alertMessage");
+        const alertTitle = document.getElementById("alertTitle");
+
+        alertMessage.textContent = message;
+        alertTitle.textContent = title;
+
+        // Set the icon and color based on alert type
+        if (type === "success") {
+          alertIcon.className = "bi bi-check-circle";
+          alertIcon.style.color = "#28a745";
+        } else if (type === "warning") {
+          alertIcon.className = "bi bi-exclamation-triangle";
+          alertIcon.style.color = "#ffc107";
+        } else {
+          alertIcon.className = "bi bi-exclamation-circle";
+          alertIcon.style.color = "#ff0000";
+        }
+
+        customAlert.style.display = "flex";
+
+        const alertOkBtn = document.getElementById("alertOkBtn");
+        alertOkBtn.onclick = () => {
+          customAlert.style.display = "none";
+        };
+      }
     </script>
   </body>
 </html>

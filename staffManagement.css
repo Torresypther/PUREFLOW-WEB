@@ -1,8 +1,13 @@
-/* Global Styles */
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
 
 body {
-  font-family: "DM Sans", sans-serif;
   font-size: 18px;
   margin: 0;
   padding: 0;
@@ -30,7 +35,6 @@ body::-webkit-scrollbar {
   display: none;
 }
 
-/* Navbar Styling */
 .nav {
   position: fixed;
   top: 0;
@@ -41,24 +45,24 @@ body::-webkit-scrollbar {
   height: 100px;
   background: linear-gradient(rgba(0, 46, 81), transparent);
   z-index: 100;
-  padding: 0 30px;
+  padding: 0 30px; 
 }
-
 .nav-logo p {
-  color: whitesmoke;
+  color: whitesmoke;;
   font-size: 25px;
   font-weight: 600;
+  margin-left: 30px;
 }
 
 .nav-menu {
   display: flex;
-  justify-content: center;
+  justify-content: center; /* Center the menu items */
   flex-grow: 1;
 }
 
 .nav-menu ul {
   display: flex;
-  margin: 0;
+  margin: 0; /* Removes default margin */
 }
 
 .nav-menu ul li {
@@ -84,7 +88,7 @@ body::-webkit-scrollbar {
   font-weight: 500;
   color: whitesmoke;
   padding-bottom: 15px;
-  margin: 0 25px;
+  margin: 0 25px; /* Space between menu items */
 }
 
 .hidden:hover,
@@ -96,25 +100,31 @@ body::-webkit-scrollbar {
 .nav-button {
   margin-left: auto;
   color: #004d80;
-  margin-right: 3.5rem;
+  margin-right: .5rem;
 }
 
 .nav-button .btn {
   width: 180px;
   height: 45px;
   font-weight: 500;
+  font-size: 16px;
   background: #eef8ff;
   color: #004d80;
   border: none;
   border-radius: 30px;
   cursor: pointer;
   transition: 0.3s ease;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow effect */
 }
 
 .btn:hover {
   background: #dcf2ff;
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3); /* More intense hover effect */
+}
+
+#signInBtn a{
+  text-decoration: none !important;
+  color: #004d80;
 }
 
 /* Main Content */
@@ -131,20 +141,99 @@ body::-webkit-scrollbar {
   backdrop-filter: blur(5px);
   z-index: 1;
 }
+.notification-container {
+  display: inline-block;
+  margin-right: 10px; /* Adjust spacing between the bell and the Add User button */
+}
 
 .main-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
+  justify-content: space-between;
 }
 
-.main-header h1 {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 700;
-  color: #003354;
+/* Notification Modal */
+.modal-body {
+  padding: 15px 20px;
+  background-color: #d8efff;
 }
+
+.list-group-item {
+  display: flex;
+  justify-content: space-between; /* This moves the button to the right */
+  align-items: center; /* Keeps the text vertically centered */
+  padding: 15px;
+  border: 1px solid #ddd;
+  margin-bottom: 10px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.list-group-item span {
+  margin-right: 20px; /* Adds space between the text and the button */
+}
+
+.list-group-item button {
+  width: 100px;
+  padding: 8px;
+  background-color: #17a98d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.list-group-item button:hover {
+  background-color: #139e82;
+  color: whitesmoke;
+}
+
+/* Adjust the modal title and button */
+.modal-header .btn-close {
+  border: none;
+  background: none;
+  font-size: 1.5rem;
+}
+
+.modal-header .modal-title {
+  font-size: 1.25rem;
+  color: #333;
+}
+
+/* Adjust the list items for notifications */
+#notificationList {
+  padding: 0;
+  margin: 0;
+}
+
+
+.main-header h1 {
+  margin-right: auto;
+}
+
+.notification-btn {
+  border: none;
+  background: none;
+  position: relative;
+}
+
+#notificationBadge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  font-size: 0.8rem;
+}
+
+.notification-container {
+  display: inline-block;
+  margin-right: 10px;
+}
+
+#addUserBtn {
+  margin-left: 0;
+}
+
 
 .main-header .btn {
   width: 160px;
@@ -232,102 +321,24 @@ body::-webkit-scrollbar {
 }
 
 .edit-btn {
-  background-color: #3498db;
-  color: #fff;
+  background-color: #3498db !important;
+  color: #fff !important;
 }
 
 .edit-btn:hover {
-  background-color: #2980b9;
+  background-color: #2980b9 !important;
 }
 
 .delete-btn {
-  background-color: #e74c3c;
-  color: #fff;
+  background-color: #e74c3c !important;
+  color: #fff !important;
 }
 
 .delete-btn:hover {
-  background-color: #c0392b;
+  background-color: #c0392b !important;
 }
 
 /* Modal Styles */
-.modal {
-  display: none; /* Hidden by default */
-  position: fixed;
-  z-index: 1; /* Sit on top */
-  left: 0;
-  top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgba(0, 0, 0, 0.4); /* Black with opacity */
-  padding-top: 60px;
-}
-
-.modal-content {
-  background-color: white;
-  margin: 5% auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%; /* Could be more or less, depending on screen size */
-}
-
-.modal-content h2 {
-  margin: 0;
-  padding-bottom: 20px;
-}
-
-.modal input,
-.modal select {
-  width: 100%;
-  padding: 8px;
-  margin: 10px 0;
-}
-
-.modal .btn {
-  padding: 10px 20px;
-  margin-top: 10px;
-}
-
-/* Button Styles */
-.primary-btn {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.secondary-btn {
-  background-color: #f44336;
-  color: white;
-}
-
-/* Status Styling */
-.status {
-  display: flex;
-  width: 100px; 
-  height: 24px; 
-  padding: auto;  
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  font-weight: bold;
-  border-radius: 150px;
-}
-
-.active-status {
-  background-color: #4CAF50;  /* Green background for active */
-  color: white;
-}
-
-.inactive-status {
-  background-color: #f44336;  /* Red background for inactive */
-  color: white;
-}
-
-.on-leave-status {
-  background-color: orange;
-  color: white;
-}
-
-/* Modal background */
 .modal {
   position: fixed;
   top: 0;
@@ -339,6 +350,9 @@ body::-webkit-scrollbar {
   align-items: center;
   background: rgba(0, 0, 0, 0.5);
   z-index: 2000;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: hidden; /* Prevent body scroll */
   transition: opacity 0.3s ease-in-out;
 }
 
@@ -348,11 +362,11 @@ body::-webkit-scrollbar {
   padding: 20px;
   border-radius: 12px;
   width: 100%;
-  max-width: 500px;  /* Set max width to 500px */
+  max-width: 500px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   text-align: left;
   box-sizing: border-box;
-  margin-top: 2%;  /* Reduced top margin for better centering */
+  margin: 5% auto; /* Centered vertically */
 }
 
 /* Modal title */
@@ -392,7 +406,7 @@ body::-webkit-scrollbar {
   outline: none;
 }
 
-/* Buttons at the bottom spanning both columns */
+/* Buttons at the bottom */
 .form-actions {
   display: flex;
   justify-content: space-between;
@@ -408,7 +422,7 @@ body::-webkit-scrollbar {
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  width: 48%;  /* Buttons take up almost the entire width */
+  width: 48%;
 }
 
 /* Primary button styles */
@@ -420,148 +434,18 @@ body::-webkit-scrollbar {
 
 .primary-btn:hover {
   background-color: #2980b9;
-}
-
-/* Secondary button styles */
-.secondary-btn {
-  background-color: #f2f2f2;
-  color: #333;
-  border: none;
-}
-
-.secondary-btn:hover {
-  background-color: #e0e0e0;
-}
-
-/* Responsive design for smaller screens */
-@media (max-width: 768px) {
-  .modal-content {
-    width: 90%;
-    padding: 15px;
-  }
-
-  .modal-content h2 {
-    font-size: 18px;
-  }
-
-  .modal-content input,
-  .modal-content select {
-    padding: 10px;
-  }
-
-  .form-actions {
-    flex-direction: column;
-    gap: 10px;
-  }
-}
-
-/* Modal background */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 2000;
-  padding: 20px;  /* Added padding to prevent overflow */
-  box-sizing: border-box;
-  overflow: hidden;  /* Prevent body scroll */
-}
-
-/* Modal content box */
-.modal-content {
-  background: #ffffff;
-  padding: 20px;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 500px;  /* Set max width to 450px */
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-  text-align: left;
-  box-sizing: border-box;
-  margin-top: 40px;  /* Reduced top margin */
-  margin-bottom: 10px;  /* Reduced bottom margin */
-}
-
-/* Modal title */
-.modal-content h2 {
-  margin: 0;
-  font-size: 20px;
-  color: #003354;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-/* Form fields (labels and inputs) */
-.modal-content label {
-  font-size: 14px;
-  color: #333;
-  margin-bottom: 5px;
-  display: block;
-}
-
-/* Input fields */
-.modal-content input,
-.modal-content select {
-  width: 100%;
-  padding: 12px;
-  font-size: 16px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  margin-bottom: 15px;
-  box-sizing: border-box;
-}
-
-/* Focus effect for inputs */
-.modal-content input:focus,
-.modal-content select:focus {
-  border-color: #3498db;
-  outline: none;
-}
-
-/* Buttons at the bottom spanning both columns */
-.form-actions {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
-  width: 100%;
-  gap: 10px;
-}
-
-.form-actions button {
-  padding: 12px 25px;
-  font-size: 16px;
-  text-transform: uppercase;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  width: 48%;  /* Buttons take up almost the entire width */
-}
-
-/* Primary button styles */
-.primary-btn {
-  background-color: #3498db;
   color: white;
-  border: none;
-}
-
-.primary-btn:hover {
-  background-color: #2980b9;
 }
 
 /* Secondary button styles */
 .secondary-btn {
-  background-color: #f2f2f2;
+  background-color: #bd1a1a;
   color: #333;
   border: none;
 }
 
 .secondary-btn:hover {
-  background-color: #e0e0e0;
+  background-color: #660a0a;
 }
 
 /* Responsive design for smaller screens */
@@ -786,4 +670,72 @@ body::-webkit-scrollbar {
     transform: scale(1.1);
     opacity: 0.8;
   }
+}
+
+/* Confirmation Dialog Styles */
+.confirmation-dialog {
+  display: none; /* Hidden by default */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+  backdrop-filter: blur(8px); /* Apply blur effect */
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.confirmation-dialog .dialog-box {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 80%;
+  z-index: 1010; /* Ensure the dialog box stays above the blurred background */
+}
+
+.confirmation-dialog .dialog-box h3 {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
+}
+
+.confirmation-dialog .dialog-box p {
+  margin: 10px 0 20px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.confirmation-dialog .dialog-box button {
+  display: block;
+  margin: 10px auto;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #28a745;
+  color: white;
+}
+
+.confirmation-dialog .dialog-box button:hover {
+  background-color: #218838;
+}
+
+.confirmation-dialog .dialog-box a {
+  display: block;
+  margin: 10px auto;
+  color: #007bff;
+  text-decoration: underline;
+  font-size: 0.9rem;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.confirmation-dialog .dialog-box a:hover {
+  color: #0056b3;
 }

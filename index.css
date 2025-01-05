@@ -1,8 +1,13 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 
-body {
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
   font-family: "Poppins", sans-serif;
-  font-size: 16px;
+}
+body {
+  font-size: 18px;
   margin: 0;
   padding: 0;
   padding-top: 100px;
@@ -11,12 +16,12 @@ body {
   background-size: cover;
   background-repeat: no-repeat;
   background-attachment: fixed;
-  position: relative; /* Set position to relative for the pseudo-element */
+  position: relative; 
 }
 
 body::before {
   content: "";
-  position: absolute; /* Position the overlay relative to the body */
+  position: absolute; 
   top: 0;
   left: 0;
   width: 100%;
@@ -29,18 +34,17 @@ body::-webkit-scrollbar {
   display: none;
 }
 
-/* Navbar Styling */
 .nav {
   position: fixed;
   top: 0;
   display: flex;
-  justify-content: space-between; /* Align logo, menu, and button */
+  justify-content: space-between;
   align-items: center;
   width: 100%;
   height: 100px;
   background: linear-gradient(rgba(0, 46, 81), transparent);
   z-index: 100;
-  padding: 0 30px; /* Add padding to prevent sticking to the sides */
+  padding: 0 30px; 
 }
 
 .nav-logo p {
@@ -51,13 +55,13 @@ body::-webkit-scrollbar {
 
 .nav-menu {
   display: flex;
-  justify-content: center; /* Center the menu items */
+  justify-content: center;
   flex-grow: 1;
 }
 
 .nav-menu ul {
   display: flex;
-  margin: 0; /* Removes default margin */
+  margin: 0;
 }
 
 .nav-menu ul li {
@@ -77,13 +81,12 @@ body::-webkit-scrollbar {
   border-bottom: 2px solid #fff;
 }
 
-/* Apply the same style to hidden links */
 .nav-menu ul li .hidden {
   text-decoration: none;
   font-weight: 500;
   color: whitesmoke;
   padding-bottom: 15px;
-  margin: 0 25px; /* Space between menu items */
+  margin: 0 25px;
 }
 
 .hidden:hover,
@@ -91,18 +94,18 @@ body::-webkit-scrollbar {
   border-bottom: 2px solid #fff;
 }
 
-/* Navbar Buttons */
 .nav-button {
   margin-left: auto;
   color: #004d80;
-  margin-right: 3.5rem;
+  margin-right: .5rem;
 }
 
 .nav-button .btn {
   width: 180px;
   height: 45px;
   font-weight: 500;
-  background: #eef8ff; /* Darker button color */
+  font-size: 16px;
+  background: #eef8ff;
   color: #004d80;
   border: none;
   border-radius: 30px;
@@ -111,12 +114,16 @@ body::-webkit-scrollbar {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow effect */
 }
 
+#signInBtn a{
+  text-decoration: none !important;
+  color: #004d80;
+}
+
 .btn:hover {
   background: #dcf2ff;
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.3); /* More intense hover effect */
 }
 
-/* Ensure the header container uses flexbox */
 .header-container {
   display: flex;
   justify-content: space-between;
@@ -127,7 +134,6 @@ body::-webkit-scrollbar {
   padding-right: 10px;
 }
 
-/* Styling for the time range selector */
 .time-range-selector {
   display: flex;
   align-items: center;
@@ -149,18 +155,16 @@ body::-webkit-scrollbar {
 
 h2 {
   color: whitesmoke;
-  font-size: 2rem;
-  margin-bottom: 5px;
-  text-align: center; /* Center header text */
+  font-size: 1.7rem;  
+  text-align: center;
+  font-weight: 600;
 }
 
-/* Main Chart Section */
 .main-chart-container {
   text-align: center;
   margin-top: 10px;
 }
 
-/* Canvas for main chart */
 #myChart {
   width: 96%;
   height: auto;
@@ -190,18 +194,18 @@ button:hover {
   background-color: #003366;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
-/* Main chart container with specific height */
+
 .main-chart-container {
   width: auto;
   height: 510px;
-  margin-bottom: 20px; /* Set fixed height for the main chart */
+  margin-bottom: 20px;
   margin-left: 35px;
   margin-right: 35px;
 }
 
 canvas {
   width: 100% !important;
-  height: 100% !important; /* Ensure the canvas fills its container */
+  height: 100% !important;
   margin-bottom: 10px;
 }
 
@@ -242,4 +246,39 @@ canvas {
   border-radius: 8px;
   border: 1px solid #0066b3;
   margin-bottom: 10px;
+}
+
+/* Styles for the alert box */
+.alert {
+  position: fixed;
+  font-weight: 500;
+  top: 105px; 
+  right: 32px;
+  background-color: #faa7b3;
+  color: #9a173e;
+  padding: 10px 20px;
+  border-radius: 10px;
+  display: none; /* Hidden by default */
+  z-index: 9999;
+}
+
+.alert.show {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.alert .close-btn {
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.alert.hide {
+  display: none;
+}
+
+#alertBox i{
+  color: #9a173e;
+  font-size: 30px;
+  margin-right: 10px;
 }

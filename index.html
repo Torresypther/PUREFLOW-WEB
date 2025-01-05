@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Water Quality Dashboard</title>
     <link rel="stylesheet" href="index.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
     />
@@ -34,62 +35,18 @@
         </ul>
       </div>
       <div class="nav-button">
-        <button class="btn white-btn" id="signInBtn" style="display: none;">
+        <button class="btn white-btn" id="signInBtn" style="display: block">
           <a href="login.html">Sign In</a>
         </button>
-        <button class="btn white-btn hidden" id="signOutBtn" style="display: none;">Sign Out</button>
+        <button
+          class="btn white-btn hidden"
+          id="signOutBtn"
+          style="display: none"
+        >
+          Sign Out
+        </button>
       </div>
     </nav>
-
-    <!-- Main header and time range selector container -->
-    <div class="header-container">
-      <h2>Welcome to your dashboard</h2>
-      <div class="time-range-selector">
-        <label for="timeRange">Select Time Range: </label>
-        <select id="timeRange">
-          <option value="daily">Daily</option>
-          <option value="weekly">Weekly</option>
-          <option value="monthly">Monthly</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Main container that holds all the charts and data -->
-    <div class="container">
-      <!-- Main chart container -->
-      <div class="main-chart-container">
-        <canvas id="myChart" width="400" height="200"></canvas>
-      </div>
-
-      <!-- Individual parameter charts and recent values -->
-      <div class="individual-charts-container">
-        <!-- Temperature -->
-        <div class="chart-container">
-          <h3>Temperature</h3>
-          <canvas id="temperatureChart" width="200" height="100"></canvas>
-          <div id="temperatureValue" class="parameter-value">
-            <p id="temperatureAvg"></p>
-          </div>
-        </div>
-        <!-- Turbidity -->
-        <div class="chart-container">
-          <h3>Turbidity</h3>
-          <canvas id="turbidityChart" width="200" height="100"></canvas>
-          <div id="turbidityValue" class="parameter-value">
-            <p id="turbidityAvg"></p>
-          </div>
-        </div>
-        <!-- Water Depth -->
-        <div class="chart-container">
-          <h3>Water Depth</h3>
-          <canvas id="waterDepthChart" width="200" height="100"></canvas>
-          <div id="waterDepthValue" class="parameter-value">
-            <p id="waterDepthAvg"></p>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- End of container -->
 
     <script type="module">
       import { db, auth } from "./config.js";
@@ -103,6 +60,9 @@
         onAuthStateChanged,
         signOut,
       } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
+
+      const signInBtn = document.getElementById("signInBtn");
+      const signOutBtn = document.getElementById("signOutBtn");
 
       async function getUserRoleByEmail(email) {
         try {
@@ -143,10 +103,23 @@
             restrictAccess();
           }
 
-          if (signOutBtn) signOutBtn.style.display = "inline-block";
+          // Hide Sign In button and show Sign Out button
+          if (signInBtn) {
+            signInBtn.style.display = "none";
+          }
+          if (signOutBtn) {
+            signOutBtn.style.display = "inline-block";
+          }
         } else {
           console.log("No user logged in.");
-          if (signOutBtn) signOutBtn.style.display = "none";
+          // Show Sign In button and hide Sign Out button
+          if (signInBtn) {
+            signInBtn.style.display = "inline-block";
+          }
+          if (signOutBtn) {
+            signOutBtn.style.display = "none";
+          }
+
           restrictAccess();
         }
       });
@@ -202,6 +175,64 @@
       restrictAccess();
     </script>
 
+    <!-- Main header and time range selector container -->
+    <div class="header-container">
+      <h2>Welcome to your dashboard</h2>
+      <div class="time-range-selector">
+        <label for="timeRange">Select Time Range: </label>
+        <select id="timeRange">
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Main container that holds all the charts and data -->
+    <div class="container">
+      <!-- Main chart container -->
+      <div class="main-chart-container">
+        <canvas id="myChart" width="400" height="200"></canvas>
+      </div>
+
+      <!-- Individual parameter charts and recent values -->
+      <div class="individual-charts-container">
+        <!-- Temperature -->
+        <div class="chart-container">
+          <h3>Temperature</h3>
+          <canvas id="temperatureChart" width="200" height="100"></canvas>
+          <div id="temperatureValue" class="parameter-value">
+            <p id="temperatureAvg"></p>
+          </div>
+        </div>
+        <!-- Turbidity -->
+        <div class="chart-container">
+          <h3>Turbidity</h3>
+          <canvas id="turbidityChart" width="200" height="100"></canvas>
+          <div id="turbidityValue" class="parameter-value">
+            <p id="turbidityAvg"></p>
+          </div>
+        </div>
+        <!-- Water Depth -->
+        <div class="chart-container">
+          <h3>Water Depth</h3>
+          <canvas id="waterDepthChart" width="200" height="100"></canvas>
+          <div id="waterDepthValue" class="parameter-value">
+            <p id="waterDepthAvg"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End of container -->
+
+    <div class="alert hide" id="alertBox">
+      <i class="bi bi-exclamation-circle"></i>
+      <span class="msg" id="alertMessage">Warning: This is a warning alert!</span>
+      <div class="close-btn" onclick="closeAlert()">
+        <span class="fas fa-times"></span>
+      </div>
+    </div>
+    
     <script type="module">
       import { db, auth } from "./config.js";
       import {
@@ -236,6 +267,65 @@
 
       let mainChartInstance = null;
 
+      function showAlert(message) {
+        const alertBox = document.getElementById("alertBox");
+        const alertMessage = document.getElementById("alertMessage");
+
+        alertMessage.textContent = message;
+        alertBox.classList.remove("hide");
+        alertBox.classList.add("show");
+
+        // Hide the alert after 5 seconds
+        setTimeout(() => {
+          closeAlert();
+        }, 10000);
+      }
+      
+      // Function to close the alert
+      function closeAlert() {
+        const alertBox = document.getElementById("alertBox");
+        alertBox.classList.remove("show");
+        alertBox.classList.add("hide");
+      }
+
+      // Function to check if a parameter exceeds a certain threshold
+      function checkThresholds() {
+        const temperatureThreshold = 30; // Example temperature threshold (°C)
+        const turbidityThreshold = 20; // Example turbidity threshold (NTU)
+        const waterDepthThreshold = 1; // Example water depth threshold (meters)
+
+        // Check if any parameter exceeds its threshold and round the values to the nearest tenth
+        filteredTemperatureData.forEach((temp, index) => {
+          const roundedTemp = temp.toFixed(2); // Round temperature to the nearest tenth
+          if (roundedTemp > temperatureThreshold) {
+            showAlert(
+              `Temperature Warning: ${roundedTemp}°C`,
+              "danger"
+            );
+          }
+        });
+
+        filteredTurbidityData.forEach((turbidity, index) => {
+          const roundedTurbidity = turbidity.toFixed(2); // Round turbidity to the nearest tenth
+          if (roundedTurbidity < turbidityThreshold) {
+            showAlert(
+              `Turbidity Warning: ${roundedTurbidity} NTU`,
+              "danger"
+            );
+          }
+        });
+
+        filteredWaterDepthData.forEach((depth, index) => {
+          const roundedDepth = depth.toFixed(2); // Round water depth to the nearest tenth
+          if (roundedDepth < waterDepthThreshold) {
+            showAlert(
+              `Water Depth Warning: ${roundedDepth} meters`,
+              "danger"
+            );
+          }
+        });
+      }
+      // Call the checkThresholds function every time new data is received
       function setupRealTimeListener() {
         onSnapshot(waterParametersCollection, (snapshot) => {
           // Reset data arrays
@@ -269,19 +359,15 @@
             }
           });
 
-          console.log("Real-time data updated:", {
-            allTemperatureData,
-            allTurbidityData,
-            allWaterDepthData,
-            allTimestamps,
-          });
-
           // Reapply filtering and update charts
           filterDataByTimeRange("daily");
           createMainChart();
           createTemperatureChart(); // Update temperature chart
           createTurbidityChart(); // Update turbidity chart
           createWaterDepthChart(); // Update water depth chart
+
+          // Check if any parameter exceeds the threshold
+          checkThresholds();
         });
       }
 
