@@ -38,7 +38,7 @@
               >Staff Page</a
             >
           </li>
-          <li><a href="about.html" id="aboutLink" class="link">About</a></li>
+          <!-- <li><a href="about.html" id="aboutLink" class="link">About</a></li> -->
         </ul>
       </div>
       <div class="nav-button">
@@ -55,6 +55,15 @@
       </div>
     </nav>
 
+    <div id="customConfirm">
+      <div>
+        <h2 id="confirmTitle">Confirmation</h2>
+        <p id="confirmMessage">Are you sure?</p>
+        <button id="confirmYesBtn">Yes</button>
+        <button id="confirmNoBtn">No</button>
+      </div>
+    </div>
+
     <script type="module">
       import { db, auth } from "./config.js";
       import {
@@ -70,15 +79,6 @@
 
       const signInBtn = document.getElementById("signInBtn");
       const signOutBtn = document.getElementById("signOutBtn");
-
-      function showConfirmationDialog() {
-        confirmationDialog.style.display = "flex";
-      }
-
-      // Redirect to login page
-      proceedToLogin.addEventListener("click", () => {
-        window.location.href = "login.html"; // Replace with the login page URL
-      });
 
       async function getUserRoleByEmail(email) {
         try {
@@ -119,17 +119,22 @@
             restrictAccess();
           }
 
-          // Hide the Sign In button and show the Sign Out button when logged in
-          if (signInBtn) signInBtn.style.display = "none";
-          if (signOutBtn) signOutBtn.style.display = "inline-block";
+          // Hide Sign In button and show Sign Out button
+          if (signInBtn) {
+            signInBtn.style.display = "none";
+          }
+          if (signOutBtn) {
+            signOutBtn.style.display = "inline-block";
+          }
         } else {
-          console.log("No user logged in. Redirecting to default page.");
-          // Show the Sign In button and hide the Sign Out button when logged out
-          if (signInBtn) signInBtn.style.display = "inline-block";
-          if (signOutBtn) signOutBtn.style.display = "none";
-
+          console.log("No user logged in.");
+          if (signInBtn) {
+            signInBtn.style.display = "inline-block";
+          }
+          if (signOutBtn) {
+            signOutBtn.style.display = "none";
+          }
           restrictAccess();
-          showConfirmationDialog();
         }
       });
 
@@ -171,15 +176,53 @@
 
         console.log("Staff access granted.");
       }
+      function showConfirm(
+        message,
+        title = "Confirmation",
+        onConfirm = () => {},
+        onCancel = () => {}
+      ) {
+        const userModal = document.getElementById("userModal");
+        const customConfirm = document.getElementById("customConfirm");
+        const confirmMessage = document.getElementById("confirmMessage");
+        const confirmTitle = document.getElementById("confirmTitle");
+        const confirmYesBtn = document.getElementById("confirmYesBtn");
+        const confirmNoBtn = document.getElementById("confirmNoBtn");
+
+        confirmMessage.textContent = message;
+        confirmTitle.textContent = title;
+
+        customConfirm.style.display = "flex";
+
+        confirmYesBtn.onclick = () => {
+          customConfirm.style.display = "none";
+          onConfirm();
+        };
+
+        confirmNoBtn.onclick = () => {
+          customConfirm.style.display = "none";
+          onCancel();
+        };
+      }
 
       signOutBtn.addEventListener("click", async () => {
-        try {
-          await signOut(auth);
-          console.log("Sign-out successful.");
-          window.location.href = "index.html"; // Redirect to homepage after sign-out
-        } catch (error) {
-          console.error("Sign-out failed:", error);
-        }
+        showConfirm(
+          "Are you sure you want to sign out?", 
+          "Sign Out Confirmation", 
+          async () => {
+            // onConfirm callback
+            try {
+              await signOut(auth);
+              console.log("Sign-out successful.");
+            } catch (error) {
+              console.error("Sign-out failed:", error);
+            }
+          },
+          () => {
+            // onCancel callback
+            console.log("Sign-out cancelled by the user.");
+          }
+        );
       });
 
       restrictAccess();

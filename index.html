@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Water Quality Dashboard</title>
     <link rel="stylesheet" href="index.css" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
     />
@@ -31,7 +34,7 @@
               >Staff Page</a
             >
           </li>
-          <li><a href="about.html" id="aboutLink" class="link">About</a></li>
+          <!-- <li><a href="about.html" id="aboutLink" class="link">About</a></li> -->
         </ul>
       </div>
       <div class="nav-button">
@@ -47,6 +50,15 @@
         </button>
       </div>
     </nav>
+    
+    <div id="customConfirm">
+      <div>
+        <h2 id="confirmTitle">Confirmation</h2>
+        <p id="confirmMessage">Are you sure?</p>
+        <button id="confirmYesBtn">Yes</button>
+        <button id="confirmNoBtn">No</button>
+      </div>
+    </div>
 
     <script type="module">
       import { db, auth } from "./config.js";
@@ -112,14 +124,12 @@
           }
         } else {
           console.log("No user logged in.");
-          // Show Sign In button and hide Sign Out button
           if (signInBtn) {
             signInBtn.style.display = "inline-block";
           }
           if (signOutBtn) {
             signOutBtn.style.display = "none";
           }
-
           restrictAccess();
         }
       });
@@ -162,14 +172,53 @@
 
         console.log("Staff access granted.");
       }
+      function showConfirm(
+        message,
+        title = "Confirmation",
+        onConfirm = () => {},
+        onCancel = () => {}
+      ) {
+        const userModal = document.getElementById("userModal");
+        const customConfirm = document.getElementById("customConfirm");
+        const confirmMessage = document.getElementById("confirmMessage");
+        const confirmTitle = document.getElementById("confirmTitle");
+        const confirmYesBtn = document.getElementById("confirmYesBtn");
+        const confirmNoBtn = document.getElementById("confirmNoBtn");
+
+        confirmMessage.textContent = message;
+        confirmTitle.textContent = title;
+
+        customConfirm.style.display = "flex";
+
+        confirmYesBtn.onclick = () => {
+          customConfirm.style.display = "none";
+          onConfirm();
+        };
+
+        confirmNoBtn.onclick = () => {
+          customConfirm.style.display = "none";
+          onCancel();
+        };
+      }
 
       signOutBtn.addEventListener("click", async () => {
-        try {
-          await signOut(auth);
-          console.log("Sign-out successful.");
-        } catch (error) {
-          console.error("Sign-out failed:", error);
-        }
+        showConfirm(
+          "Are you sure you want to sign out?", 
+          "Sign Out Confirmation", 
+          async () => {
+            // onConfirm callback
+            try {
+              await signOut(auth);
+              console.log("Sign-out successful.");
+            } catch (error) {
+              console.error("Sign-out failed:", error);
+            }
+          },
+          () => {
+            // onCancel callback
+            console.log("Sign-out cancelled by the user.");
+          }
+        );
       });
 
       restrictAccess();
@@ -227,12 +276,14 @@
 
     <div class="alert hide" id="alertBox">
       <i class="bi bi-exclamation-circle"></i>
-      <span class="msg" id="alertMessage">Warning: This is a warning alert!</span>
+      <span class="msg" id="alertMessage"
+        >Warning: This is a warning alert!</span
+      >
       <div class="close-btn" onclick="closeAlert()">
         <span class="fas fa-times"></span>
       </div>
     </div>
-    
+
     <script type="module">
       import { db, auth } from "./config.js";
       import {
@@ -280,7 +331,7 @@
           closeAlert();
         }, 10000);
       }
-      
+
       // Function to close the alert
       function closeAlert() {
         const alertBox = document.getElementById("alertBox");
@@ -290,38 +341,29 @@
 
       // Function to check if a parameter exceeds a certain threshold
       function checkThresholds() {
-        const temperatureThreshold = 30; // Example temperature threshold (°C)
-        const turbidityThreshold = 20; // Example turbidity threshold (NTU)
+        const temperatureThreshold = 30;
+        const turbidityThreshold = 20;
         const waterDepthThreshold = 1; // Example water depth threshold (meters)
 
         // Check if any parameter exceeds its threshold and round the values to the nearest tenth
         filteredTemperatureData.forEach((temp, index) => {
           const roundedTemp = temp.toFixed(2); // Round temperature to the nearest tenth
           if (roundedTemp > temperatureThreshold) {
-            showAlert(
-              `Temperature Warning: ${roundedTemp}°C`,
-              "danger"
-            );
+            showAlert(`Temperature Warning: ${roundedTemp}°C`, "danger");
           }
         });
 
         filteredTurbidityData.forEach((turbidity, index) => {
           const roundedTurbidity = turbidity.toFixed(2); // Round turbidity to the nearest tenth
           if (roundedTurbidity < turbidityThreshold) {
-            showAlert(
-              `Turbidity Warning: ${roundedTurbidity} NTU`,
-              "danger"
-            );
+            showAlert(`Turbidity Warning: ${roundedTurbidity} NTU`, "danger");
           }
         });
 
         filteredWaterDepthData.forEach((depth, index) => {
           const roundedDepth = depth.toFixed(2); // Round water depth to the nearest tenth
           if (roundedDepth < waterDepthThreshold) {
-            showAlert(
-              `Water Depth Warning: ${roundedDepth} meters`,
-              "danger"
-            );
+            showAlert(`Water Depth Warning: ${roundedDepth} meters`, "danger");
           }
         });
       }

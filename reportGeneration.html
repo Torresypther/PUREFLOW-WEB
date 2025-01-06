@@ -34,7 +34,7 @@
               >Staff Page</a
             >
           </li>
-          <li><a href="about.html" id="aboutLink" class="link">About</a></li>
+          <!-- <li><a href="about.html" id="aboutLink" class="link">About</a></li> -->
         </ul>
       </div>
       <div class="nav-button">
@@ -44,6 +44,15 @@
         <button class="btn white-btn hidden" id="signOutBtn" style="display: none;">Sign Out</button>
       </div>
     </nav>
+
+    <div id="customConfirm">
+      <div>
+        <h2 id="confirmTitle">Confirmation</h2>
+        <p id="confirmMessage">Are you sure?</p>
+        <button id="confirmYesBtn">Yes</button>
+        <button id="confirmNoBtn">No</button>
+      </div>
+    </div>
 
     <script type="module">
       import { db, auth } from "./config.js";
@@ -57,19 +66,10 @@
         onAuthStateChanged,
         signOut,
       } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
-    
+
       const signInBtn = document.getElementById("signInBtn");
       const signOutBtn = document.getElementById("signOutBtn");
-    
-      function showConfirmationDialog() {
-        confirmationDialog.style.display = "flex";
-      }
-    
-      // Redirect to login page
-      proceedToLogin.addEventListener("click", () => {
-        window.location.href = "login.html"; // Replace with the login page URL
-      });
-    
+
       async function getUserRoleByEmail(email) {
         try {
           console.log("Fetching role for email:", email);
@@ -78,7 +78,7 @@
             where("email", "==", email)
           );
           const querySnapshot = await getDocs(userQuery);
-    
+
           if (querySnapshot.empty) {
             console.error("No document found for email:", email);
             return null;
@@ -92,12 +92,12 @@
           return null;
         }
       }
-    
+
       onAuthStateChanged(auth, async (user) => {
         if (user) {
           console.log("User is logged in:", user);
           const userRole = await getUserRoleByEmail(user.email);
-    
+
           if (userRole === "Admin") {
             grantAccessForAdmin();
           } else if (userRole === "Staff") {
@@ -108,21 +108,26 @@
             );
             restrictAccess();
           }
-    
-          // Hide the Sign In button and show the Sign Out button when logged in
-          if (signInBtn) signInBtn.style.display = "none";
-          if (signOutBtn) signOutBtn.style.display = "inline-block";
+
+          // Hide Sign In button and show Sign Out button
+          if (signInBtn) {
+            signInBtn.style.display = "none";
+          }
+          if (signOutBtn) {
+            signOutBtn.style.display = "inline-block";
+          }
         } else {
-          console.log("No user logged in. Redirecting to default page.");
-          // Show the Sign In button and hide the Sign Out button when logged out
-          if (signInBtn) signInBtn.style.display = "inline-block";
-          if (signOutBtn) signOutBtn.style.display = "none";
-    
+          console.log("No user logged in.");
+          if (signInBtn) {
+            signInBtn.style.display = "inline-block";
+          }
+          if (signOutBtn) {
+            signOutBtn.style.display = "none";
+          }
           restrictAccess();
-          showConfirmationDialog();
         }
       });
-    
+
       function restrictAccess() {
         if (staffLink) {
           staffLink.style.pointerEvents = "none";
@@ -132,10 +137,10 @@
           reportLink.style.pointerEvents = "none";
           reportLink.style.opacity = "0.5";
         }
-    
+
         console.log("Access restricted.");
       }
-    
+
       function grantAccessForAdmin() {
         if (staffLink) {
           staffLink.style.pointerEvents = "auto";
@@ -145,10 +150,10 @@
           reportLink.style.pointerEvents = "auto";
           reportLink.style.opacity = "1";
         }
-    
+
         console.log("Admin access granted.");
       }
-    
+
       function grantAccessForStaff() {
         if (staffLink) {
           staffLink.style.pointerEvents = "none";
@@ -158,20 +163,58 @@
           reportLink.style.pointerEvents = "auto";
           reportLink.style.opacity = "1";
         }
-    
+
         console.log("Staff access granted.");
       }
-    
+      function showConfirm(
+        message,
+        title = "Confirmation",
+        onConfirm = () => {},
+        onCancel = () => {}
+      ) {
+        const userModal = document.getElementById("userModal");
+        const customConfirm = document.getElementById("customConfirm");
+        const confirmMessage = document.getElementById("confirmMessage");
+        const confirmTitle = document.getElementById("confirmTitle");
+        const confirmYesBtn = document.getElementById("confirmYesBtn");
+        const confirmNoBtn = document.getElementById("confirmNoBtn");
+
+        confirmMessage.textContent = message;
+        confirmTitle.textContent = title;
+
+        customConfirm.style.display = "flex";
+
+        confirmYesBtn.onclick = () => {
+          customConfirm.style.display = "none";
+          onConfirm();
+        };
+
+        confirmNoBtn.onclick = () => {
+          customConfirm.style.display = "none";
+          onCancel();
+        };
+      }
+
       signOutBtn.addEventListener("click", async () => {
-        try {
-          await signOut(auth);
-          console.log("Sign-out successful.");
-          window.location.href = "index.html"; // Redirect to homepage after sign-out
-        } catch (error) {
-          console.error("Sign-out failed:", error);
-        }
+        showConfirm(
+          "Are you sure you want to sign out?", 
+          "Sign Out Confirmation", 
+          async () => {
+            // onConfirm callback
+            try {
+              await signOut(auth);
+              console.log("Sign-out successful.");
+            } catch (error) {
+              console.error("Sign-out failed:", error);
+            }
+          },
+          () => {
+            // onCancel callback
+            console.log("Sign-out cancelled by the user.");
+          }
+        );
       });
-    
+
       restrictAccess();
     </script>
 
@@ -206,7 +249,7 @@
           <div id="dateRangeInputs">
             <label for="startDate">Start Date:</label>
             <input type="date" id="startDate" />
-            <label for="endDate">End Date:</label>
+            <label for="endDate" id="endDateLabel">End Date:</label>
             <input type="date" id="endDate" />
           </div>
         </div>
@@ -307,7 +350,7 @@
       let myChart = null;
 
       function validateInputs(reportType, startDate, endDate) {
-        const today = new Date().toISOString().split("T")[0]; // Today's date in YYYY-MM-DD format
+        const today = new Date().toISOString().split("T")[0]; 
 
         if (reportType === "custom") {
           if (!startDate || !endDate) {
@@ -347,8 +390,8 @@
         };
 
         const today = new Date();
-        const todayStart = new Date(today.setHours(0, 0, 0, 0)); // Midnight of today
-        const todayEnd = new Date(today.setHours(23, 59, 59, 999)); // End of today (11:59:59.999 PM)
+        const todayStart = new Date(today.setHours(0, 0, 0, 0));
+        const todayEnd = new Date(today.setHours(23, 59, 59, 999));
 
         let finalStartDate = startDate ? new Date(startDate) : todayStart;
         let finalEndDate = endDate ? new Date(endDate) : todayEnd;
@@ -376,7 +419,7 @@
             finalStartDate.setHours(0, 0, 0, 0);
             finalEndDate.setMonth(today.getMonth() + 1);
             finalEndDate.setDate(0);
-            finalEndDate.setHours(23, 59, 59, 999); // End of the last day of the month
+            finalEndDate.setHours(23, 59, 59, 999);
 
             console.log("Monthly Report - Final Start Date:", finalStartDate);
             console.log("Monthly Report - Final End Date:", finalEndDate);

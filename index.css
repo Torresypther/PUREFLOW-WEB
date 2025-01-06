@@ -16,18 +16,18 @@ body {
   background-size: cover;
   background-repeat: no-repeat;
   background-attachment: fixed;
-  position: relative; 
+  position: relative;
 }
 
 body::before {
   content: "";
-  position: absolute; 
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 46, 81, 0.50);
-  z-index: -1; 
+  background: rgba(0, 46, 81, 0.5);
+  z-index: -1;
 }
 
 body::-webkit-scrollbar {
@@ -44,11 +44,11 @@ body::-webkit-scrollbar {
   height: 100px;
   background: linear-gradient(rgba(0, 46, 81), transparent);
   z-index: 100;
-  padding: 0 30px; 
+  padding: 0 30px;
 }
 
 .nav-logo p {
-  color: whitesmoke;;
+  color: whitesmoke;
   font-size: 25px;
   font-weight: 600;
 }
@@ -97,7 +97,7 @@ body::-webkit-scrollbar {
 .nav-button {
   margin-left: auto;
   color: #004d80;
-  margin-right: .5rem;
+  margin-right: 0.5rem;
 }
 
 .nav-button .btn {
@@ -114,7 +114,7 @@ body::-webkit-scrollbar {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow effect */
 }
 
-#signInBtn a{
+#signInBtn a {
   text-decoration: none !important;
   color: #004d80;
 }
@@ -155,7 +155,7 @@ body::-webkit-scrollbar {
 
 h2 {
   color: whitesmoke;
-  font-size: 1.7rem;  
+  font-size: 1.7rem;
   text-align: center;
   font-weight: 600;
 }
@@ -221,7 +221,6 @@ canvas {
   width: 30%;
   position: relative;
   height: 230px;
-  
 }
 
 .parameter-value {
@@ -252,13 +251,13 @@ canvas {
 .alert {
   position: fixed;
   font-weight: 500;
-  top: 105px; 
-  right: 32px;
+  top: 185px;
+  right: 40px;
   background-color: #faa7b3;
   color: #9a173e;
   padding: 10px 20px;
   border-radius: 10px;
-  display: none; /* Hidden by default */
+  display: none;
   z-index: 9999;
 }
 
@@ -277,8 +276,148 @@ canvas {
   display: none;
 }
 
-#alertBox i{
+#alertBox i {
   color: #9a173e;
   font-size: 30px;
   margin-right: 10px;
+}
+
+/* Custom Alert Modal */
+#customAlert {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.5s ease-in-out; /* Fade-in animation */
+}
+
+#customAlert .modal-content {
+  background-color: #fff;
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  animation: bounceIn 0.5s ease-in-out; /* Bounce-in animation */
+}
+
+#customAlert .modal-content i {
+  margin-bottom: 15px;
+  animation: pulse 1s infinite; /* Pulse effect for the icon */
+}
+
+#customAlert h2 {
+  margin: 0 0 10px;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+#customAlert p {
+  margin: 0 0 20px;
+  font-size: 1rem;
+  color: #666;
+}
+
+#customAlert .btn {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#customAlert .primary-btn {
+  background-color: #007bff;
+  color: #fff;
+  transition: background-color 0.3s ease;
+}
+
+#customAlert .primary-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.5);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+#customConfirm {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+  color: #004d80;
+}
+
+#customConfirm div {
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  width: 400px;
+  text-align: center;
+}
+
+#customConfirm h2{
+  color: #003366;
+  margin-bottom: 20px;
+}
+
+#customConfirm button{
+  margin: 10px;
+  margin-top: 30px;
+  width: 100px;
+  border-radius: 50px;
+  border-style: none;
+  padding: 10px;
+}
+
+#confirmYesBtn{
+  background-color: #08d360;
+  color: #ffffff;
+}
+
+#confirmNoBtn{
+  background-color: #9a173e;
+  color: #ffffff;
 }
